@@ -1,9 +1,6 @@
 package car.rental.core.customers.infrastructure.mapper;
 
 import car.rental.core.customers.domain.model.Customer;
-import car.rental.core.customers.domain.model.CustomerType;
-import car.rental.core.customers.dto.CreateCustomerRequest;
-import car.rental.core.customers.infrastructure.persistence.BusinessCustomerEntity;
 import car.rental.core.customers.infrastructure.persistence.CustomerProfileEntity;
 import car.rental.core.users.infrastructure.persistence.UserEntity;
 

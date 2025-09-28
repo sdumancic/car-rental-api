@@ -4,7 +4,9 @@ import car.rental.core.billingdetails.infrastructure.BillingDetailsEntity;
 import car.rental.core.common.domain.BaseEntity;
 import car.rental.core.customers.infrastructure.persistence.CustomerProfileEntity;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -17,8 +19,8 @@ import java.util.Set;
 @Setter
 @Entity
 @Table(name = "users", indexes = {
-    @Index(name = "idx_users_username_unique", columnList = "username", unique = true),
-    @Index(name = "idx_users_email_unique", columnList = "email", unique = true)
+        @Index(name = "idx_users_username_unique", columnList = "username", unique = true),
+        @Index(name = "idx_users_email_unique", columnList = "email", unique = true)
 })
 @NoArgsConstructor
 public class UserEntity extends BaseEntity {
@@ -50,26 +52,26 @@ public class UserEntity extends BaseEntity {
     private String mobileNumber;
 
     @AttributeOverrides({
-        @AttributeOverride(name = "street", column = @Column(name = "home_street")),
-        @AttributeOverride(name = "houseNumber", column = @Column(name = "home_house_number")),
-        @AttributeOverride(name = "zipcode", column = @Column(name = "home_zipcode")),
-        @AttributeOverride(name = "city", column = @Column(name = "home_city"))
+            @AttributeOverride(name = "street", column = @Column(name = "home_street")),
+            @AttributeOverride(name = "houseNumber", column = @Column(name = "home_house_number")),
+            @AttributeOverride(name = "zipcode", column = @Column(name = "home_zipcode")),
+            @AttributeOverride(name = "city", column = @Column(name = "home_city"))
     })
     private AddressEmbeddable homeAddress;
 
     @AttributeOverrides({
-        @AttributeOverride(name = "street", column = @Column(name = "billing_street")),
-        @AttributeOverride(name = "houseNumber", column = @Column(name = "billing_house_number")),
-        @AttributeOverride(name = "zipcode", column = @Column(name = "billing_zipcode")),
-        @AttributeOverride(name = "city", column = @Column(name = "billing_city"))
+            @AttributeOverride(name = "street", column = @Column(name = "billing_street")),
+            @AttributeOverride(name = "houseNumber", column = @Column(name = "billing_house_number")),
+            @AttributeOverride(name = "zipcode", column = @Column(name = "billing_zipcode")),
+            @AttributeOverride(name = "city", column = @Column(name = "billing_city"))
     })
     private AddressEmbeddable billingAddress;
 
-    @OneToMany(mappedBy="user",cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @OrderBy("active DESC, dateCreated DESC")
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Set<BillingDetailsEntity> billingDetails = new java.util.HashSet<>();
 
-    @OneToOne(mappedBy = "user",cascade = CascadeType.ALL, optional = true, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     protected CustomerProfileEntity customerProfile;
 }

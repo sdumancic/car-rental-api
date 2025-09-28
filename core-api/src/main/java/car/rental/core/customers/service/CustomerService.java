@@ -2,16 +2,11 @@ package car.rental.core.customers.service;
 
 import car.rental.core.customers.domain.model.Customer;
 import car.rental.core.customers.domain.model.CustomerType;
-import car.rental.core.customers.domain.repository.CustomerRepository;
 import car.rental.core.customers.dto.CreateCustomerRequest;
 import car.rental.core.customers.infrastructure.mapper.BusinessCustomerMapper;
 import car.rental.core.customers.infrastructure.mapper.PrivateCustomerMapper;
 import car.rental.core.customers.infrastructure.persistence.PanacheBusinessCustomerRepository;
 import car.rental.core.customers.infrastructure.persistence.PanachePrivateCustomerRepository;
-import car.rental.core.users.domain.model.User;
-import car.rental.core.users.domain.repository.UserRepository;
-import car.rental.core.users.dto.CreateUserRequest;
-import car.rental.core.users.infrastructure.mapper.UserMapper;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;

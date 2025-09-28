@@ -4,7 +4,6 @@ import car.rental.core.customers.domain.model.Customer;
 import car.rental.core.customers.domain.repository.CustomerRepository;
 import car.rental.core.customers.infrastructure.mapper.BusinessCustomerMapper;
 import car.rental.core.customers.infrastructure.mapper.CustomerProfileMapper;
-import car.rental.core.customers.infrastructure.mapper.PrivateCustomerMapper;
 import car.rental.core.users.infrastructure.persistence.UserEntity;
 import car.rental.core.users.infrastructure.persistence.UserEntityRepository;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -13,7 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.Optional;
-
 
 @ApplicationScoped
 @RequiredArgsConstructor
@@ -41,7 +39,7 @@ public class PanacheBusinessCustomerRepository implements CustomerRepository {
         if (userEntity == null) {
             throw new IllegalStateException("UserEntity not found for id: " + customer.getId());
         }
-        CustomerProfileEntity customerProfileEntity = CustomerProfileMapper.toEntity(customer,userEntity);
+        CustomerProfileEntity customerProfileEntity = CustomerProfileMapper.toEntity(customer, userEntity);
         customerProfileEntityRepository.persist(customerProfileEntity);
         // Create PrivateCustomerEntity and set managed CustomerProfileEntity
         BusinessCustomerEntity entity = BusinessCustomerMapper.toEntity(customer, customerProfileEntity);
