@@ -19,12 +19,12 @@ public class PanacheVehicleRepository implements VehicleRepository {
     private final VehicleEntityRepository vehicleEntityRepository;
 
     @Override
-    public Optional findById(Long id) {
+    public Optional<Vehicle> findById(Long id) {
         return vehicleEntityRepository.findByIdOptional(id).map(VehicleMapper::toDomain);
     }
 
     @Override
-    public List findAll() {
+    public List<Vehicle> findAll() {
         return vehicleEntityRepository.listAll().stream().map(VehicleMapper::toDomain).toList();
     }
 

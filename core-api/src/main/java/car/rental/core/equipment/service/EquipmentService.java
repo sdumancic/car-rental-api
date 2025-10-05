@@ -16,7 +16,12 @@ public class EquipmentService {
 
     @Transactional
     public Equipment createEquipment(CreateEquipmentRequest request) {
+
         Equipment equipment = EquipmentMapper.toDomain(request);
         return panacheEquipmentRepository.save(equipment);
+    }
+
+    public Equipment findEquipmentById(Long id) {
+        return panacheEquipmentRepository.findById(id).orElse(null);
     }
 }

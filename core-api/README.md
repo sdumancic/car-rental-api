@@ -53,6 +53,74 @@ You can then execute your native executable with: `./target/core-api-1.0-SNAPSHO
 
 If you want to learn more about building native executables, please consult <https://quarkus.io/guides/maven-tooling>.
 
+## Media Upload (Images & Videos)
+
+Single-part uploads for images and videos are handled via:
+
+`POST /videos/upload` (multipart/form-data)
+
+Form fields:
+
+- `file`: the binary file contents
+- `fileName`: original file name (used to determine media type & extension)
+
+Container routing logic:
+
+- Images (jpg, jpeg, png, gif, bmp, svg, webp, heic, heif, tiff, tif) -> `images` container
+- Videos (mp4, mov, avi, mkv, webm, m4v, wmv, flv) and any other/unknown types -> `videos` container
+
+The service generates a blob name: `UUID-sanitizedBaseName.ext` and returns metadata.
+
+### Windows (cmd.exe) example
+
+```
+curl --location http://localhost:8090/videos/upload ^
+  --form file=@"C:/Users/you/Videos/food.mp4" ^
+  --form fileName=food.mp4
+```
+
+### PowerShell example
+
+```
+curl -Method POST http://localhost:8090/videos/upload `
+  -Form @{ file = Get-Item "C:/Users/you/Videos/food.mp4"; fileName = 'food.mp4' }
+```
+
+### Linux / macOS example
+
+```
+curl --location 'http://localhost:8090/videos/upload' \
+  --form 'file=@"/home/you/Videos/food.mp4"' \
+  --form 'fileName="food.mp4"'
+```
+
+### Sample JSON Response
+
+```
+{
+  "container": "videos",
+  "blobName": "550e8400-e29b-41d4-a716-446655440000-food.mp4",
+  "url": "https://<account>.blob.core.windows.net/videos/550e8400-e29b-41d4-a716-446655440000-food.mp4",
+  "mediaCategory": "video",
+  "originalFileName": "food.mp4"
+}
+```
+
+### Error Response Example
+
+```
+{
+  "error": "Failed to upload file: <reason>"
+}
+```
+
+### Notes
+
+- For large (>100MB) videos prefer the block upload flow (`/videos/init-upload` -> client uploads blocks ->
+  `/videos/complete-upload`).
+- Filenames are sanitized; unsafe characters are replaced to avoid Azure `InvalidResourceName` errors.
+- A fallback container (`videos-fallback`) is attempted automatically if the primary upload hits certain Azure errors.
+
 ## Provided Code
 
 ### REST

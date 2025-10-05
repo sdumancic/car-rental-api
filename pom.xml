@@ -28,6 +28,7 @@
         <skipITs>true</skipITs>
         <!-- Toolchains plugin version -->
         <toolchains-plugin.version>3.1.0</toolchains-plugin.version>
+        <azure.storage.version>12.28.0</azure.storage.version>
     </properties>
 
     <modules>
@@ -49,6 +50,12 @@
                 <version>${lombok.version}</version>
                 <scope>provided</scope>
             </dependency>
+            <dependency>
+                <groupId>com.azure</groupId>
+                <artifactId>azure-storage-blob</artifactId>
+                <version>${azure.storage.version}</version>
+            </dependency>
+            
         </dependencies>
     </dependencyManagement>
 

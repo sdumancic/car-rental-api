@@ -33,6 +33,7 @@ public class PanacheVehicleEquipmentRepository implements VehicleEquipmentReposi
         VehicleEquipmentEntity entity = VehicleEquipmentMapper.toEntity(vehicleEquipment);
         entity.setDateCreated(Instant.now());
         entity.setDateModified(Instant.now());
+        entity.setActive(true);
         vehicleEquipmentEntityRepository.persist(entity);
         return VehicleEquipmentMapper.toDomain(entity);
     }

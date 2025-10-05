@@ -19,4 +19,8 @@ public class VehicleService {
         Vehicle vehicle = VehicleMapper.toDomain(request);
         return panacheVehicleRepository.save(vehicle);
     }
+
+    public Vehicle findVehicleById(Long id) {
+        return panacheVehicleRepository.findById(id).orElse(null);
+    }
 }

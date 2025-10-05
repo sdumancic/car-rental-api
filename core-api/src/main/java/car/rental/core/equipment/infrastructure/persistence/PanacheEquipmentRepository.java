@@ -19,12 +19,12 @@ public class PanacheEquipmentRepository implements EquipmentRepository {
     private final EquipmentEntityRepository equipmentEntityRepository;
 
     @Override
-    public Optional findById(Long id) {
+    public Optional<Equipment> findById(Long id) {
         return equipmentEntityRepository.findByIdOptional(id).map(EquipmentMapper::toDomain);
     }
 
     @Override
-    public List findAll() {
+    public List<Equipment> findAll() {
         return equipmentEntityRepository.listAll().stream().map(EquipmentMapper::toDomain).toList();
     }
 

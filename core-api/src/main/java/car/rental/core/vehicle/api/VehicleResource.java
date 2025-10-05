@@ -6,10 +6,7 @@ import car.rental.core.vehicle.service.VehicleService;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
@@ -25,6 +22,16 @@ public class VehicleResource {
     public Response createVehicle(@Valid CreateVehicleRequest request) {
         Vehicle vehicle = vehicleService.createVehicle(request);
         return Response.status(Response.Status.CREATED)
+                .entity(vehicle)
+                .build();
+    }
+
+    @GET
+    @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response findVehicleById(Long id) {
+        Vehicle vehicle = vehicleService.findVehicleById(id);
+        return Response.status(Response.Status.OK)
                 .entity(vehicle)
                 .build();
     }
