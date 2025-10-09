@@ -2,12 +2,26 @@ version: '3.8'
 
 services:
 
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    container_name: "azurite"
+    hostname: azurite
+    restart: always
+    ports:
+      - "10000:10000"
+      - "10001:10001"
+      - "10002:10002"
+    networks:
+      - car-rental-network
+    volumes:
+      - D:/dockerfiles/azurite/car-rental-db/data:/data
+
   redis:
     image: redis:latest
     container_name: redis
     ports:
       - "6379:6379"
-    command: ["redis-server", "--appendonly", "yes"]
+    command: [ "redis-server", "--appendonly", "yes" ]
     volumes:
       - D:/dockerfiles/redis/car-rental-redis-data:/data
     networks:
