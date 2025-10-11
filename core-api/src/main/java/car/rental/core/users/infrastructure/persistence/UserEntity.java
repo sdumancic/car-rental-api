@@ -74,4 +74,7 @@ public class UserEntity extends BaseEntity {
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     protected CustomerProfileEntity customerProfile;
+
+    @Column(name = "active", nullable = false)
+    private Boolean active = true;
 }

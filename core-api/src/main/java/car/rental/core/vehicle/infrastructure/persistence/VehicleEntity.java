@@ -37,4 +37,6 @@ public class VehicleEntity extends BaseEntity {
     @Column(name = "transmission_type")
     @Enumerated(EnumType.STRING)
     private TransmissionType transmission;
+    @Column(name = "active", nullable = false)
+    private Boolean active = true;
 }

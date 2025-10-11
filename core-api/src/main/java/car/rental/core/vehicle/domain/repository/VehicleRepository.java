@@ -10,4 +10,8 @@ public interface VehicleRepository extends BaseRepository<Vehicle> {
     List<Vehicle> findByQuery(QueryVehicleRequest query);
 
     long countByQuery(QueryVehicleRequest query);
+
+    Vehicle update(Vehicle vehicle);
+
+    void softDeleteById(Long id);
 }

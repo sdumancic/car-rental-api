@@ -32,5 +32,32 @@
         </createTable>
     </changeSet>
 
-</databaseChangeLog>
+    <changeSet id="20251011-02-create-vehicles-table" author="autogen">
+        <createTable tableName="vehicles">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="date_created" type="datetime2">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_modified" type="datetime2">
+                <constraints nullable="false"/>
+            </column>
+            <column name="make" type="varchar(255)"/>
+            <column name="model" type="varchar(255)"/>
+            <column name="year" type="int"/>
+            <column name="vin" type="varchar(255)"/>
+            <column name="license_plate" type="varchar(255)"/>
+            <column name="vehicle_type" type="varchar(255)"/>
+            <column name="vehicle_status" type="varchar(255)"/>
+            <column name="passengers" type="int"/>
+            <column name="doors" type="int"/>
+            <column name="fuel_type" type="varchar(255)"/>
+            <column name="transmission_type" type="varchar(255)"/>
+            <column name="active" type="boolean" defaultValue="true">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
 
+</databaseChangeLog>

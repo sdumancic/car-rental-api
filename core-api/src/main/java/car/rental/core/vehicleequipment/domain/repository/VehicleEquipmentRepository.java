@@ -4,4 +4,5 @@ import car.rental.core.common.domain.BaseRepository;
 import car.rental.core.vehicleequipment.domain.model.VehicleEquipment;
 
 public interface VehicleEquipmentRepository extends BaseRepository<VehicleEquipment> {
+    void deleteByVehicleIdAndEquipmentId(Long vehicleId, Long equipmentId);
 }

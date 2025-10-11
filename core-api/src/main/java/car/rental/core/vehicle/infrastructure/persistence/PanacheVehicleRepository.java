@@ -1,5 +1,6 @@
 package car.rental.core.vehicle.infrastructure.persistence;
 
+import car.rental.core.common.util.SortUtils;
 import car.rental.core.vehicle.domain.model.Vehicle;
 import car.rental.core.vehicle.domain.repository.VehicleRepository;
 import car.rental.core.vehicle.dto.QueryVehicleRequest;
@@ -94,7 +95,7 @@ public class PanacheVehicleRepository implements VehicleRepository {
 
         // Apply sorting if specified
         if (query.getSort() != null && !query.getSort().trim().isEmpty()) {
-            Sort sort = createSort(query.getSort());
+            Sort sort = SortUtils.createSort(query.getSort());
             panacheQuery = vehicleEntityRepository.find(queryBuilder.toString(), sort, params.toArray());
         }
 
@@ -103,41 +104,6 @@ public class PanacheVehicleRepository implements VehicleRepository {
                 .stream()
                 .map(VehicleMapper::toDomain)
                 .toList();
-    }
-
-    private Sort createSort(String sortParam) {
-        String[] sortFields = sortParam.split(",");
-        Sort sort = null;
-
-        for (String sortField : sortFields) {
-            sortField = sortField.trim();
-            if (sortField.startsWith("-")) {
-                // Descending order
-                String fieldName = sortField.substring(1);
-                if (sort == null) {
-                    sort = Sort.by(fieldName, Sort.Direction.Descending);
-                } else {
-                    sort.and(fieldName, Sort.Direction.Descending);
-                }
-            } else if (sortField.startsWith("+")) {
-                // Ascending order (explicit)
-                String fieldName = sortField.substring(1);
-                if (sort == null) {
-                    sort = Sort.by(fieldName, Sort.Direction.Ascending);
-                } else {
-                    sort.and(fieldName, Sort.Direction.Ascending);
-                }
-            } else {
-                // Default ascending order
-                if (sort == null) {
-                    sort = Sort.by(sortField, Sort.Direction.Ascending);
-                } else {
-                    sort.and(sortField, Sort.Direction.Ascending);
-                }
-            }
-        }
-
-        return sort;
     }
 
     @Override
@@ -186,5 +152,23 @@ public class PanacheVehicleRepository implements VehicleRepository {
         }
 
         return vehicleEntityRepository.count(queryBuilder.toString(), params.toArray());
+    }
+
+    @Override
+    public Vehicle update(Vehicle vehicle) {
+        VehicleEntity entity = VehicleMapper.toEntity(vehicle);
+        entity.setDateModified(Instant.now());
+        vehicleEntityRepository.persist(entity);
+        return VehicleMapper.toDomain(entity);
+    }
+
+    @Override
+    public void softDeleteById(Long id) {
+        VehicleEntity entity = vehicleEntityRepository.findById(id);
+        if (entity != null) {
+            entity.setActive(false);
+            entity.setDateModified(Instant.now());
+            vehicleEntityRepository.persist(entity);
+        }
     }
 }

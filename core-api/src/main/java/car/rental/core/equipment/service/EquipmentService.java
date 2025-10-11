@@ -24,4 +24,24 @@ public class EquipmentService {
     public Equipment findEquipmentById(Long id) {
         return panacheEquipmentRepository.findById(id).orElse(null);
     }
+
+    @Transactional
+    public Equipment updateEquipment(Long id, CreateEquipmentRequest request) {
+        Equipment existing = findEquipmentById(id);
+        if (existing == null) {
+            throw new RuntimeException("Equipment not found");
+        }
+        Equipment updated = Equipment.builder()
+                .id(id)
+                .name(request.getName())
+                .description(request.getDescription())
+                .active(existing.getActive())
+                .build();
+        return panacheEquipmentRepository.update(updated);
+    }
+
+    @Transactional
+    public void softDeleteEquipment(Long id) {
+        panacheEquipmentRepository.softDeleteById(id);
+    }
 }

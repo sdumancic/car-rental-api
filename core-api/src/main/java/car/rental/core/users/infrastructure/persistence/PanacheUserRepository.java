@@ -6,8 +6,8 @@ import car.rental.core.users.infrastructure.mapper.UserMapper;
 import jakarta.enterprise.context.ApplicationScoped;
 import lombok.RequiredArgsConstructor;
 
-import java.util.Optional;
 import java.util.List;
+import java.util.Optional;
 
 
 @ApplicationScoped
@@ -38,4 +38,19 @@ public class PanacheUserRepository implements UserRepository {
         entityRepo.deleteById(id);
     }
 
+    @Override
+    public User update(User user) {
+        UserEntity entity = UserMapper.toEntity(user);
+        entityRepo.persist(entity);
+        return UserMapper.toDomain(entity);
+    }
+
+    @Override
+    public void softDeleteById(Long id) {
+        UserEntity entity = entityRepo.findById(id);
+        if (entity != null) {
+            entity.setActive(false);
+            entityRepo.persist(entity);
+        }
+    }
 }

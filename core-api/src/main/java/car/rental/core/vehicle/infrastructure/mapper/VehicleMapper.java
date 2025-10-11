@@ -23,6 +23,7 @@ public class VehicleMapper {
                 .doors(request.getDoors())
                 .fuelType(request.getFuelType())
                 .transmission(request.getTransmission())
+                .active(true)
                 .build();
     }
 
@@ -44,6 +45,7 @@ public class VehicleMapper {
         entity.setDoors(domain.getDoors());
         entity.setFuelType(domain.getFuelType());
         entity.setTransmission(domain.getTransmission());
+        entity.setActive(domain.getActive());
         return entity;
     }
 

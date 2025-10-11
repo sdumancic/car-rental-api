@@ -38,7 +38,25 @@ public class PanacheEquipmentRepository implements EquipmentRepository {
     }
 
     @Override
+    public Equipment update(Equipment equipment) {
+        EquipmentEntity entity = EquipmentMapper.toEntity(equipment);
+        entity.setDateModified(Instant.now());
+        equipmentEntityRepository.persist(entity);
+        return EquipmentMapper.toDomain(entity);
+    }
+
+    @Override
     public void deleteById(Long id) {
 
+    }
+
+    @Override
+    public void softDeleteById(Long id) {
+        EquipmentEntity entity = equipmentEntityRepository.findById(id);
+        if (entity != null) {
+            entity.setActive(false);
+            entity.setDateModified(Instant.now());
+            equipmentEntityRepository.persist(entity);
+        }
     }
 }

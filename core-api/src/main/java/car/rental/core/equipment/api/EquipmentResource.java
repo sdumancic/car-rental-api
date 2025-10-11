@@ -6,10 +6,7 @@ import car.rental.core.equipment.service.EquipmentService;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
@@ -27,5 +24,21 @@ public class EquipmentResource {
         return Response.status(Response.Status.CREATED)
                 .entity(equipment)
                 .build();
+    }
+
+    @PUT
+    @Path("/{id}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateEquipment(@PathParam("id") Long id, @Valid CreateEquipmentRequest request) {
+        Equipment equipment = equipmentService.updateEquipment(id, request);
+        return Response.ok(equipment).build();
+    }
+
+    @DELETE
+    @Path("/{id}")
+    public Response deleteEquipment(@PathParam("id") Long id) {
+        equipmentService.softDeleteEquipment(id);
+        return Response.noContent().build();
     }
 }

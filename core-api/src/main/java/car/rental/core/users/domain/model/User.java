@@ -26,4 +26,5 @@ public class User {
     private Instant dateModified;
     private Address homeAddress;
     private Address billingAddress;
+    private Boolean active;
 }

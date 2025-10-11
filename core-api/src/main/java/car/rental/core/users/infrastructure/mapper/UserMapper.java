@@ -37,6 +37,7 @@ public class UserMapper {
                 .passwordHash(HashUtils.hashPassword(request.getPassword()))
                 .homeAddress(homeAddress)
                 .billingAddress(billingAddress)
+                .active(true)
                 .build();
     }
 
@@ -72,6 +73,7 @@ public class UserMapper {
             billingAddress.setCity(domain.getBillingAddress().getCity());
             entity.setBillingAddress(billingAddress);
         }
+        entity.setActive(domain.getActive());
         return entity;
     }
 
@@ -81,22 +83,22 @@ public class UserMapper {
             return null;
         }
         var homeAddress = entity.getHomeAddress() != null
-            ? Address.builder()
+                ? Address.builder()
                 .street(entity.getHomeAddress().getStreet())
                 .houseNumber(entity.getHomeAddress().getHouseNumber())
                 .zipcode(entity.getHomeAddress().getZipcode())
                 .city(entity.getHomeAddress().getCity())
                 .build()
-            : null;
+                : null;
 
         var billingAddress = entity.getBillingAddress() != null
-            ? Address.builder()
+                ? Address.builder()
                 .street(entity.getBillingAddress().getStreet())
                 .houseNumber(entity.getBillingAddress().getHouseNumber())
                 .zipcode(entity.getBillingAddress().getZipcode())
                 .city(entity.getBillingAddress().getCity())
                 .build()
-            : null;
+                : null;
 
         return User.builder()
                 .id(entity.getId())
@@ -109,6 +111,7 @@ public class UserMapper {
                 .dateModified(entity.getDateModified())
                 .homeAddress(homeAddress)
                 .billingAddress(billingAddress)
+                .active(entity.getActive())
                 .build();
     }
 

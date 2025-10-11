@@ -22,4 +22,5 @@ public class Vehicle {
     private Integer doors;
     private FuelType fuelType;
     private TransmissionType transmission;
+    private Boolean active;
 }

@@ -19,12 +19,13 @@ public class PanacheVehicleEquipmentRepository implements VehicleEquipmentReposi
     private final VehicleEquipmentEntityRepository vehicleEquipmentEntityRepository;
 
     @Override
-    public Optional findById(Long id) {
-        return vehicleEquipmentEntityRepository.findByIdOptional(id).map(VehicleEquipmentMapper::toDomain);
+    public Optional<VehicleEquipment> findById(Long id) {
+        // Not applicable for composite key
+        return Optional.empty();
     }
 
     @Override
-    public List findAll() {
+    public List<VehicleEquipment> findAll() {
         return vehicleEquipmentEntityRepository.listAll().stream().map(VehicleEquipmentMapper::toDomain).toList();
     }
 
@@ -41,5 +42,13 @@ public class PanacheVehicleEquipmentRepository implements VehicleEquipmentReposi
     @Override
     public void deleteById(Long id) {
 
+    }
+
+    @Override
+    public void deleteByVehicleIdAndEquipmentId(Long vehicleId, Long equipmentId) {
+        VehicleEquipmentId id = new VehicleEquipmentId();
+        id.setVehicleId(vehicleId);
+        id.setEquipmentId(equipmentId);
+        vehicleEquipmentEntityRepository.deleteById(id);
     }
 }

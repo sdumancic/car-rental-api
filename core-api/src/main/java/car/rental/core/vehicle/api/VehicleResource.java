@@ -1,12 +1,12 @@
 package car.rental.core.vehicle.api;
 
+import car.rental.core.common.dto.PageResponse;
 import car.rental.core.vehicle.domain.model.FuelType;
 import car.rental.core.vehicle.domain.model.TransmissionType;
 import car.rental.core.vehicle.domain.model.Vehicle;
 import car.rental.core.vehicle.domain.model.VehicleType;
 import car.rental.core.vehicle.dto.CreateVehicleRequest;
 import car.rental.core.vehicle.dto.QueryVehicleRequest;
-import car.rental.core.vehicle.dto.VehiclePageResponse;
 import car.rental.core.vehicle.service.VehicleService;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
@@ -75,9 +75,25 @@ public class VehicleResource {
         query.setPage(page);
         query.setSize(size);
 
-        VehiclePageResponse response = vehicleService.findVehicles(query);
+        PageResponse<Vehicle> response = vehicleService.findVehicles(query);
         return Response.status(Response.Status.OK)
                 .entity(response)
                 .build();
+    }
+
+    @PUT
+    @Path("/{id}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateVehicle(@PathParam("id") Long id, @Valid CreateVehicleRequest request) {
+        Vehicle vehicle = vehicleService.updateVehicle(id, request);
+        return Response.ok(vehicle).build();
+    }
+
+    @DELETE
+    @Path("/{id}")
+    public Response deleteVehicle(@PathParam("id") Long id) {
+        vehicleService.softDeleteVehicle(id);
+        return Response.noContent().build();
     }
 }
