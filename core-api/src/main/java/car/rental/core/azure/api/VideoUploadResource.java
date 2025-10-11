@@ -52,7 +52,7 @@ public class VideoUploadResource {
                                @QueryParam("mediaCategory") String mediaCategory,
                                @QueryParam("vehicleId") Long vehicleId) {
         try {
-            boolean deleted = azureBlobService.deleteBlob(blobName, mediaCategory, vehicleId);
+            boolean deleted = azureBlobService.deleteBlob(blobName, vehicleId);
             if (deleted) {
                 return Response.ok(Map.of("deleted", true)).build();
             } else {
@@ -70,10 +70,9 @@ public class VideoUploadResource {
     @Path("/download")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response downloadBlob(@QueryParam("blobName") String blobName,
-                                 @QueryParam("mediaCategory") String mediaCategory,
                                  @QueryParam("vehicleId") Long vehicleId) {
         try {
-            byte[] data = azureBlobService.downloadBlob(blobName, mediaCategory, vehicleId);
+            byte[] data = azureBlobService.downloadBlob(blobName, vehicleId);
             return Response.ok(data)
                     .header("Content-Disposition", "attachment; filename=\"" + blobName + "\"")
                     .build();

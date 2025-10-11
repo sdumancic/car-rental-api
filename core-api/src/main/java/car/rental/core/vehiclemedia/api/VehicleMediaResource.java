@@ -65,9 +65,9 @@ public class VehicleMediaResource {
     }
 
     @GET
-    @Path("{id}/download")
+    @Path("{id}/download-link")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response downloadMedia(@PathParam("id") Long mediaId) {
+    public Response getDownloadLink(@PathParam("id") Long mediaId) {
         VehicleMedia vehicleMedia = vehicleMediaService.findById(mediaId);
         if (vehicleMedia == null) {
             return Response.status(Response.Status.NOT_FOUND)
@@ -106,5 +106,42 @@ public class VehicleMediaResource {
         return Response.status(Response.Status.OK)
                 .entity(downloadUrl)
                 .build();
+    }
+
+    @GET
+    @Path("{id}/download")
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public Response downloadMedia(@PathParam("id") Long mediaId) {
+        try {
+            byte[] content = vehicleMediaService.downloadMedia(mediaId);
+            VehicleMedia vehicleMedia = vehicleMediaService.findById(mediaId);
+            // Extract filename from URL
+            String blobUrl = vehicleMedia.getUrl();
+            String marker = "/vehicles/";
+            int idx = blobUrl.indexOf(marker);
+            String encodedBlobName = blobUrl.substring(idx + marker.length());
+            String blobName = URLDecoder.decode(encodedBlobName, StandardCharsets.UTF_8);
+            // Remove leading vehicleId/ if present
+            String vehicleIdPrefix = vehicleMedia.getVehicle().getId() + "/";
+            if (blobName.startsWith(vehicleIdPrefix)) {
+                blobName = blobName.substring(vehicleIdPrefix.length());
+            }
+            String filename = blobName;
+            return Response.ok(content)
+                    .header("Content-Disposition", "attachment; filename=\"" + filename + "\"")
+                    .build();
+        } catch (IllegalArgumentException e) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(e.getMessage())
+                    .build();
+        } catch (NotFoundException e) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity("Blob not found")
+                    .build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Failed to download media")
+                    .build();
+        }
     }
 }

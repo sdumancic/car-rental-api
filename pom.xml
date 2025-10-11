@@ -55,7 +55,7 @@
                 <artifactId>azure-storage-blob</artifactId>
                 <version>${azure.storage.version}</version>
             </dependency>
-            
+
         </dependencies>
     </dependencyManagement>
 
