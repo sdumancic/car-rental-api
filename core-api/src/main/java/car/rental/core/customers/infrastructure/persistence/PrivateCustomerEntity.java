@@ -20,6 +20,8 @@ public class PrivateCustomerEntity extends BaseEntity {
     @JoinColumn(name = "id")
     private CustomerProfileEntity customerProfile;
 
+    @Column(name = "date_of_birth", columnDefinition = "datetime2")
     private Instant dateOfBirth;
+    @Column(name = "driver_license_no", nullable = false, unique = true)
     private String driverLicenseNo;
 }

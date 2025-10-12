@@ -31,7 +31,7 @@ public class PricingTierEntity extends car.rental.core.common.domain.BaseEntity 
     @Column(name = "max_days")
     private Integer maxDays;
 
-    @Column(name = "price", nullable = false)
+    @Column(name = "price", nullable = false, precision = 10, scale = 2)
     @NotNull
     @DecimalMin(value = "0.0", inclusive = false)
     private BigDecimal price;

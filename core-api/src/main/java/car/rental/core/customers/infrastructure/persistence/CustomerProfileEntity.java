@@ -19,6 +19,7 @@ public class CustomerProfileEntity extends BaseEntity {
     private UserEntity user;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "customer_type", nullable = false)
     private CustomerType customerType;
 
     @OneToOne(mappedBy = "customerProfile", cascade = CascadeType.ALL, optional = true)

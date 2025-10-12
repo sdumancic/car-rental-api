@@ -16,7 +16,7 @@
             <column name="date_modified" type="datetime2">
                 <constraints nullable="false"/>
             </column>
-            <column name="username" type="varchar(255)">
+            <column name="username" type="varchar(18)">
                 <constraints nullable="false" unique="true"/>
             </column>
             <column name="password_hash" type="varchar(255)">
@@ -58,6 +58,331 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
+    </changeSet>
+
+    <changeSet id="20251012-03-create-reservations-table" author="autogen">
+        <createTable tableName="reservations">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="date_created" type="datetime2">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_modified" type="datetime2">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="vehicle_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="start_date" type="date">
+                <constraints nullable="false"/>
+            </column>
+            <column name="end_date" type="date">
+                <constraints nullable="false"/>
+            </column>
+            <column name="price" type="decimal(10,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="reservations" baseColumnNames="user_id" referencedTableName="users"
+                                 referencedColumnNames="id" constraintName="fk_reservations_user_id"/>
+        <addForeignKeyConstraint baseTableName="reservations" baseColumnNames="vehicle_id"
+                                 referencedTableName="vehicles" referencedColumnNames="id"
+                                 constraintName="fk_reservations_vehicle_id"/>
+        <createIndex indexName="idx_reservations_user_id" tableName="reservations">
+            <column name="user_id"/>
+            <column name="start_date"/>
+        </createIndex>
+        <createIndex indexName="idx_reservations_vehicle_id" tableName="reservations">
+            <column name="vehicle_id"/>
+            <column name="start_date"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="20251012-04-create-equipment-table" author="autogen">
+        <createTable tableName="equipment">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="date_created" type="datetime2">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_modified" type="datetime2">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="varchar(255)"/>
+            <column name="description" type="varchar(255)"/>
+            <column name="active" type="boolean"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="20251012-05-create-pricing-category-table" author="autogen">
+        <createTable tableName="pricing_category">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="date_created" type="datetime2">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_modified" type="datetime2">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="description" type="varchar(255)"/>
+            <column name="active" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="20251012-06-create-pricing-tier-table" author="autogen">
+        <createTable tableName="pricing_tier">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="date_created" type="datetime2">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_modified" type="datetime2">
+                <constraints nullable="false"/>
+            </column>
+            <column name="pricing_category_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="min_days" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="max_days" type="int"/>
+            <column name="price" type="decimal(10,2)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="pricing_tier" baseColumnNames="pricing_category_id"
+                                 referencedTableName="pricing_category" referencedColumnNames="id"
+                                 constraintName="fk_pricing_tier_pricing_category_id"/>
+        <createIndex indexName="idx_pricing_tier_pricing_category_id" tableName="pricing_tier">
+            <column name="pricing_category_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="20251012-07-create-pricing-table" author="autogen">
+        <createTable tableName="pricing">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="date_created" type="datetime2">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_modified" type="datetime2">
+                <constraints nullable="false"/>
+            </column>
+            <column name="vehicle_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="pricing_category_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="pricing" baseColumnNames="vehicle_id" referencedTableName="vehicles"
+                                 referencedColumnNames="id" constraintName="fk_pricing_vehicle_id"/>
+        <addForeignKeyConstraint baseTableName="pricing" baseColumnNames="pricing_category_id"
+                                 referencedTableName="pricing_category" referencedColumnNames="id"
+                                 constraintName="fk_pricing_pricing_category_id"/>
+        <createIndex indexName="idx_pricing_vehicle_id" tableName="pricing">
+            <column name="vehicle_id"/>
+        </createIndex>
+        <createIndex indexName="idx_pricing_pricing_category_id" tableName="pricing">
+            <column name="pricing_category_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="20251012-08-create-vehicle-equipment-table" author="autogen">
+        <createTable tableName="vehicle_equipment">
+            <column name="vehicle_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="equipment_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="boolean"/>
+            <column name="date_created" type="datetime2">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_modified" type="datetime2">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey columnNames="vehicle_id,equipment_id" tableName="vehicle_equipment"/>
+        <addForeignKeyConstraint baseTableName="vehicle_equipment" baseColumnNames="vehicle_id"
+                                 referencedTableName="vehicles" referencedColumnNames="id"
+                                 constraintName="fk_vehicle_equipment_vehicle_id"/>
+        <addForeignKeyConstraint baseTableName="vehicle_equipment" baseColumnNames="equipment_id"
+                                 referencedTableName="equipment" referencedColumnNames="id"
+                                 constraintName="fk_vehicle_equipment_equipment_id"/>
+        <createIndex indexName="idx_vehicle_equipment_ui1" tableName="vehicle_equipment" unique="true">
+            <column name="vehicle_id"/>
+            <column name="equipment_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="20251012-09-create-vehicle-media-table" author="autogen">
+        <createTable tableName="vehicle_media">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="date_created" type="datetime2">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_modified" type="datetime2">
+                <constraints nullable="false"/>
+            </column>
+            <column name="file_name" type="varchar(255)"/>
+            <column name="file_type" type="varchar(255)"/>
+            <column name="url" type="varchar(255)"/>
+            <column name="media_type" type="varchar(255)"/>
+            <column name="vehicle_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="vehicle_media" baseColumnNames="vehicle_id"
+                                 referencedTableName="vehicles" referencedColumnNames="id"
+                                 constraintName="fk_vehicle_media_vehicle_id"/>
+    </changeSet>
+
+    <changeSet id="20251012-10-create-customer-profile-table" author="autogen">
+        <createTable tableName="customer_profile">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="customer_type" type="varchar(255)"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="customer_profile" baseColumnNames="id" referencedTableName="users"
+                                 referencedColumnNames="id" constraintName="fk_customer_profile_id"/>
+    </changeSet>
+
+    <changeSet id="20251012-11-create-private-customers-table" author="autogen">
+        <createTable tableName="private_customers">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="date_created" type="datetime2">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_modified" type="datetime2">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_of_birth" type="datetime2"/>
+            <column name="driver_license_no" type="varchar(255)"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="private_customers" baseColumnNames="id"
+                                 referencedTableName="customer_profile" referencedColumnNames="id"
+                                 constraintName="fk_private_customers_id"/>
+    </changeSet>
+
+    <changeSet id="20251012-12-create-business-customers-table" author="autogen">
+        <createTable tableName="business_customers">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="date_created" type="datetime2">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_modified" type="datetime2">
+                <constraints nullable="false"/>
+            </column>
+            <column name="company_name" type="varchar(255)"/>
+            <column name="tax_number" type="varchar(255)"/>
+            <column name="registration_number" type="varchar(255)"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="business_customers" baseColumnNames="id"
+                                 referencedTableName="customer_profile" referencedColumnNames="id"
+                                 constraintName="fk_business_customers_id"/>
+    </changeSet>
+
+    <changeSet id="20251012-13-create-billing-details-table" author="autogen">
+        <createTable tableName="billing_details">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="date_created" type="datetime2">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_modified" type="datetime2">
+                <constraints nullable="false"/>
+            </column>
+            <column name="card_number" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="card_holder" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="expiry_date" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="billing_address" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="provider" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="billing_details" baseColumnNames="user_id" referencedTableName="users"
+                                 referencedColumnNames="id" constraintName="fk_billing_details_user_id"/>
+        <createIndex indexName="idx_billing_details_user_id" tableName="billing_details">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="20251012-14-add-address-columns-to-users-table" author="autogen">
+        <addColumn tableName="users">
+            <column name="home_street" type="varchar(255)"/>
+            <column name="home_house_number" type="varchar(255)"/>
+            <column name="home_zipcode" type="varchar(255)"/>
+            <column name="home_city" type="varchar(255)"/>
+            <column name="billing_street" type="varchar(255)"/>
+            <column name="billing_house_number" type="varchar(255)"/>
+            <column name="billing_zipcode" type="varchar(255)"/>
+            <column name="billing_city" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20251012-15-add-dates-to-customer-profile" author="autogen">
+        <addColumn tableName="customer_profile">
+            <column name="date_created" type="datetime2">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_modified" type="datetime2">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20251012-17-add-active-to-users" author="autogen">
+        <addColumn tableName="users">
+            <column name="active" type="bit">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
     </changeSet>
 
 </databaseChangeLog>

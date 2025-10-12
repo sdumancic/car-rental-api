@@ -16,7 +16,10 @@ public class BusinessCustomerEntity extends BaseEntity {
     @JoinColumn(name = "id")
     private CustomerProfileEntity customerProfile;
 
+    @Column(name = "company_name", nullable = false)
     private String companyName;
+    @Column(name = "tax_number")
     private String taxNumber;
+    @Column(name = "registration_number")
     private String registrationNumber;
 }
