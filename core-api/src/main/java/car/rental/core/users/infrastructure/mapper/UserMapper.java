@@ -48,6 +48,7 @@ public class UserMapper {
             return null;
         }
         UserEntity entity = new UserEntity();
+        entity.setId(domain.getId());
         entity.setUsername(domain.getUsername());
         entity.setFirstName(domain.getFirstName());
         entity.setLastName(domain.getLastName());
@@ -74,6 +75,7 @@ public class UserMapper {
             entity.setBillingAddress(billingAddress);
         }
         entity.setActive(domain.getActive());
+        entity.setDriverLicenseBlobId(domain.getDriverLicenseBlobId());
         return entity;
     }
 
@@ -111,8 +113,46 @@ public class UserMapper {
                 .dateModified(entity.getDateModified())
                 .homeAddress(homeAddress)
                 .billingAddress(billingAddress)
+                .driverLicenseBlobId(entity.getDriverLicenseBlobId())
                 .active(entity.getActive())
                 .build();
+    }
+
+    public static void updateEntity(UserEntity entity, User domain) {
+        entity.setUsername(domain.getUsername());
+        entity.setEmail(domain.getEmail());
+        entity.setFirstName(domain.getFirstName());
+        entity.setLastName(domain.getLastName());
+        entity.setPhoneNumber(domain.getPhoneNumber());
+        entity.setMobileNumber(domain.getMobileNumber());
+        entity.setDateModified(domain.getDateModified());
+        if (domain.getPasswordHash() != null) {
+            entity.setPasswordHash(domain.getPasswordHash());
+        }
+        if (domain.getHomeAddress() != null) {
+            AddressEmbeddable homeAddress = entity.getHomeAddress();
+            if (homeAddress == null) {
+                homeAddress = new AddressEmbeddable();
+            }
+            homeAddress.setStreet(domain.getHomeAddress().getStreet());
+            homeAddress.setHouseNumber(domain.getHomeAddress().getHouseNumber());
+            homeAddress.setZipcode(domain.getHomeAddress().getZipcode());
+            homeAddress.setCity(domain.getHomeAddress().getCity());
+            entity.setHomeAddress(homeAddress);
+        }
+        if (domain.getBillingAddress() != null) {
+            AddressEmbeddable billingAddress = entity.getBillingAddress();
+            if (billingAddress == null) {
+                billingAddress = new AddressEmbeddable();
+            }
+            billingAddress.setStreet(domain.getBillingAddress().getStreet());
+            billingAddress.setHouseNumber(domain.getBillingAddress().getHouseNumber());
+            billingAddress.setZipcode(domain.getBillingAddress().getZipcode());
+            billingAddress.setCity(domain.getBillingAddress().getCity());
+            entity.setBillingAddress(billingAddress);
+        }
+        entity.setActive(domain.getActive());
+        entity.setDriverLicenseBlobId(domain.getDriverLicenseBlobId());
     }
 
 }

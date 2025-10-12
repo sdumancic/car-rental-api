@@ -47,7 +47,7 @@ public class VehicleMediaResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response addMediaToVehicle(@MultipartForm FileUploadForm form, @PathParam("id") Long id) {
         VehicleMedia vehicleMedia = vehicleMediaService.findById(id);
-        UploadResult result = azureBlobService.uploadMedia(form.fileInput, form.fileName, vehicleMedia.getVehicle().getId());
+        UploadResult result = azureBlobService.uploadMediaForVehicle(form.fileInput, form.fileName, vehicleMedia.getVehicle().getId());
         vehicleMediaService.setMediaBlobUrl(vehicleMedia, result.getUrl());
         return Response.status(Response.Status.CREATED)
                 .entity(vehicleMedia)

@@ -30,7 +30,7 @@ public class VideoUploadResource {
     public Response uploadFile(@MultipartForm FileUploadForm form,
                                @QueryParam("vehicleId") Long vehicleId) {
         try {
-            UploadResult result = azureBlobService.uploadMedia(form.fileInput, form.fileName, vehicleId);
+            UploadResult result = azureBlobService.uploadMediaForVehicle(form.fileInput, form.fileName, vehicleId);
             return Response.ok(Map.of(
                     "container", result.getContainer(),
                     "blobName", result.getBlobName(),

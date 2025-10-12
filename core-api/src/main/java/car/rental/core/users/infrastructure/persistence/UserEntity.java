@@ -75,6 +75,9 @@ public class UserEntity extends BaseEntity {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     protected CustomerProfileEntity customerProfile;
 
+    @Column(name = "driver_license_blob_id")
+    private String driverLicenseBlobId;
+
     @Column(name = "active", nullable = false)
     private Boolean active = true;
 }

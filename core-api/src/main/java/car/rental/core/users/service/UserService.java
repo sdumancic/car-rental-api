@@ -1,13 +1,17 @@
 package car.rental.core.users.service;
 
-import car.rental.core.common.util.HashUtils;
-import car.rental.core.users.domain.model.Address;
+import car.rental.core.azure.dto.UploadResult;
+import car.rental.core.azure.service.AzureBlobService;
+import car.rental.core.common.dto.PageResponse;
+import car.rental.core.common.exception.ResourceNotFoundException;
 import car.rental.core.users.domain.model.User;
 import car.rental.core.users.domain.repository.UserRepository;
 import car.rental.core.users.dto.CreateUserRequest;
+import car.rental.core.users.dto.QueryUserRequest;
 import car.rental.core.users.infrastructure.mapper.UserMapper;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.core.UriInfo;
 import lombok.RequiredArgsConstructor;
 
 @ApplicationScoped
@@ -15,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final AzureBlobService azureBlobService;
 
     @Transactional
     public User createUser(CreateUserRequest request) {
@@ -28,38 +33,53 @@ public class UserService {
 
     @Transactional
     public User updateUser(Long id, CreateUserRequest request) {
-        User existing = findUserById(id);
-        if (existing == null) {
-            throw new RuntimeException("User not found");
-        }
-        User updated = User.builder()
-                .id(id)
-                .username(request.getUsername())
-                .email(request.getEmail())
-                .firstName(request.getFirstName())
-                .lastName(request.getLastName())
-                .phoneNumber(request.getPhoneNumber())
-                .mobileNumber(request.getMobileNumber())
-                .passwordHash(HashUtils.hashPassword(request.getPassword()))
-                .homeAddress(Address.builder()
-                        .street(request.getHomeStreet())
-                        .houseNumber(request.getHomeHouseNumber())
-                        .zipcode(request.getHomeZipcode())
-                        .city(request.getHomeCity())
-                        .build())
-                .billingAddress(Address.builder()
-                        .street(request.getBillingStreet())
-                        .houseNumber(request.getBillingHouseNumber())
-                        .zipcode(request.getBillingZipcode())
-                        .city(request.getBillingCity())
-                        .build())
-                .active(existing.getActive())
-                .build();
-        return userRepository.update(updated);
+        User user = UserMapper.toDomain(request);
+        user.setId(id);
+        return userRepository.update(user);
     }
 
     @Transactional
     public void softDeleteUser(Long id) {
+        User existing = findUserById(id);
+        if (existing == null) {
+            throw new ResourceNotFoundException("User not found");
+        }
         userRepository.softDeleteById(id);
+    }
+
+    public PageResponse<User> findUsers(QueryUserRequest query, UriInfo uriInfo) {
+        return userRepository.findUsers(query, uriInfo);
+    }
+
+    @Transactional
+    public UploadResult uploadDriverLicense(Long userId, java.io.InputStream fileInput, String fileName) {
+        User user = findUserById(userId);
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found");
+        }
+        UploadResult result = azureBlobService.uploadDriverLicense(fileInput, fileName, userId);
+        // Remove any leading userId/ from blobName before storing
+        String blobName = result.getBlobName();
+        if (blobName.startsWith(userId + "/")) {
+            blobName = blobName.substring((userId + "/").length());
+        }
+        userRepository.updateDriverLicenseBlobId(userId, blobName); // Only update the blobId
+        return result;
+    }
+
+    public byte[] downloadDriverLicense(Long userId) {
+        User user = findUserById(userId);
+        if (user == null || user.getDriverLicenseBlobId() == null) {
+            throw new ResourceNotFoundException("Driver license not found");
+        }
+        return azureBlobService.downloadDriverLicense(user.getDriverLicenseBlobId(), userId);
+    }
+
+    public String generateDriverLicenseDownloadLink(Long userId) {
+        User user = findUserById(userId);
+        if (user == null || user.getDriverLicenseBlobId() == null) {
+            throw new ResourceNotFoundException("Driver license not found");
+        }
+        return azureBlobService.generateDriverLicenseDownloadLink(userId, user.getDriverLicenseBlobId());
     }
 }

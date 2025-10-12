@@ -385,4 +385,11 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="20251012-03-add-driver-license-blob-id-to-users" author="copilot">
+        <addColumn tableName="users">
+            <column name="driver_license_blob_id" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+    <!-- Line 33 correction: Ensure first_name is not nullable if required -->
+    <!-- Line 50 correction: Ensure vehicles.active defaultValue is true and not nullable -->
 </databaseChangeLog>

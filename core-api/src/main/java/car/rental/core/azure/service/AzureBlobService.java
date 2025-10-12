@@ -16,7 +16,6 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import java.io.InputStream;
 import java.time.OffsetDateTime;
 import java.util.*;
-import java.util.regex.Pattern;
 
 @Slf4j
 @ApplicationScoped
@@ -41,31 +40,58 @@ public class AzureBlobService {
     }
 
     /**
-     * Uploads media to Azure Blob Storage under vehicles-{vehicleId}-images or vehicles-{vehicleId}-videos container.
+     * Uploads media to Azure Blob Storage.
+     * For vehicles: containers vehicles-images or vehicles-videos with path vehicleId/filename
+     * For customers: containers customers-images or customers-videos with path customerId/filename
      * Creates the container if it does not exist.
      */
-    private String generateBlobNameWithPath(Long vehicleId, String original, String ext) {
+    private String generateBlobNameWithPath(Long entityId, String original, String ext) {
         int dot = original.lastIndexOf('.');
         String base = (dot > 0 ? original.substring(0, dot) : original);
         base = sanitizeBlobName(base);
         if (base.length() > 80) base = base.substring(0, 80);
         String generatedUuid = UUID.randomUUID().toString();
         String fileName = ext.isBlank() ? generatedUuid + "-" + base : generatedUuid + "-" + base + "." + ext;
-        return vehicleId + "/" + fileName;
+        return entityId + "/" + fileName;
     }
 
-    public UploadResult uploadMedia(InputStream fileInput, String fileName, Long vehicleId) {
+    /**
+     * Uploads media for a vehicle.
+     */
+    public UploadResult uploadMediaForVehicle(InputStream fileInput, String fileName, Long vehicleId) {
+        return uploadMedia(fileInput, fileName, vehicleId, "vehicles");
+    }
+
+    /**
+     * Uploads media for a customer.
+     */
+    public UploadResult uploadMediaForCustomer(InputStream fileInput, String fileName, Long customerId) {
+        return uploadMedia(fileInput, fileName, customerId, "customers");
+    }
+
+    /**
+     * Generic upload method that handles both vehicles and customers.
+     */
+    private UploadResult uploadMedia(InputStream fileInput, String fileName, Long entityId, String entityType) {
         if (fileInput == null) throw new IllegalArgumentException("fileInput is null");
-        if (vehicleId == null) throw new IllegalArgumentException("vehicleId is required");
+        if (entityId == null) throw new IllegalArgumentException("entityId is required");
+        if (entityType == null || (!entityType.equals("vehicles") && !entityType.equals("customers"))) {
+            throw new IllegalArgumentException("entityType must be 'vehicles' or 'customers'");
+        }
+
         String original = fileName == null ? "file" : fileName.trim();
         String ext = getFileExtension(original);
         String mediaCategory = detectMediaCategory(ext);
         if (mediaCategory.equals("other")) throw new IllegalArgumentException("Unsupported file type: " + ext);
-        String container = "vehicles";
+
+        // Container name: vehicles-images, vehicles-videos, customers-images, customers-videos
+        String container = entityType + "-" + mediaCategory;
         BlobContainerClient containerClient = getOrCreateContainer(container);
-        String blobName = generateBlobNameWithPath(vehicleId, original, ext);
+
+        String blobName = generateBlobNameWithPath(entityId, original, ext);
         String sanitizedBlobName = strictSanitizeBlobName(stripQuotes(blobName));
         validateBlobName(sanitizedBlobName);
+
         BlockBlobClient strictClient = containerClient.getBlobClient(sanitizedBlobName).getBlockBlobClient();
         try {
             byte[] bytes = fileInput.readAllBytes();
@@ -122,12 +148,30 @@ public class AzureBlobService {
     }
 
     /**
-     * Deletes a blob from Azure Storage given its blobName and vehicleId.
+     * Deletes a blob for a vehicle from Azure Storage.
      */
-    public boolean deleteBlob(String blobName, Long vehicleId) {
+    public boolean deleteBlobForVehicle(String blobName, Long vehicleId, String mediaCategory) {
+        return deleteBlob(blobName, vehicleId, "vehicles", mediaCategory);
+    }
+
+    /**
+     * Deletes a blob for a customer from Azure Storage.
+     */
+    public boolean deleteBlobForCustomer(String blobName, Long customerId, String mediaCategory) {
+        return deleteBlob(blobName, customerId, "customers", mediaCategory);
+    }
+
+    /**
+     * Generic delete method that handles both vehicles and customers.
+     */
+    private boolean deleteBlob(String blobName, Long entityId, String entityType, String mediaCategory) {
         try {
-            BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient("vehicles");
-            String blobPath = vehicleId + "/" + strictSanitizeBlobName(stripQuotes(blobName));
+            if (mediaCategory == null || (!mediaCategory.equals("images") && !mediaCategory.equals("videos"))) {
+                throw new IllegalArgumentException("mediaCategory must be 'images' or 'videos'");
+            }
+            String container = entityType + "-" + mediaCategory;
+            BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(container);
+            String blobPath = entityId + "/" + strictSanitizeBlobName(stripQuotes(blobName));
             validateBlobName(blobPath);
             if (!containerClient.exists()) {
                 log.warn("Container '{}' does not exist", containerClient.getBlobContainerName());
@@ -148,13 +192,51 @@ public class AzureBlobService {
     }
 
     /**
-     * Downloads a blob from Azure Storage given its blobName and vehicleId.
-     * Returns the blob content as a byte array.
+     * Legacy method for backward compatibility - deletes a blob for a vehicle.
+     * Attempts to find the blob in both images and videos containers.
+     *
+     * @deprecated Use deleteBlobForVehicle with mediaCategory instead
      */
-    public byte[] downloadBlob(String blobName, Long vehicleId) {
+    @Deprecated
+    public boolean deleteBlob(String blobName, Long vehicleId) {
+        // Try images first, then videos
         try {
-            BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient("vehicles");
-            String blobPath = vehicleId + "/" + strictSanitizeBlobName(stripQuotes(blobName));
+            return deleteBlobForVehicle(blobName, vehicleId, "images");
+        } catch (Exception e) {
+            try {
+                return deleteBlobForVehicle(blobName, vehicleId, "videos");
+            } catch (Exception ex) {
+                log.error("Failed to delete blob from both containers: {}", ex.getMessage(), ex);
+                return false;
+            }
+        }
+    }
+
+    /**
+     * Downloads a blob for a vehicle from Azure Storage.
+     */
+    public byte[] downloadBlobForVehicle(String blobName, Long vehicleId, String mediaCategory) {
+        return downloadBlob(blobName, vehicleId, "vehicles", mediaCategory);
+    }
+
+    /**
+     * Downloads a blob for a customer from Azure Storage.
+     */
+    public byte[] downloadBlobForCustomer(String blobName, Long customerId, String mediaCategory) {
+        return downloadBlob(blobName, customerId, "customers", mediaCategory);
+    }
+
+    /**
+     * Generic download method that handles both vehicles and customers.
+     */
+    private byte[] downloadBlob(String blobName, Long entityId, String entityType, String mediaCategory) {
+        try {
+            if (mediaCategory == null || (!mediaCategory.equals("images") && !mediaCategory.equals("videos"))) {
+                throw new IllegalArgumentException("mediaCategory must be 'images' or 'videos'");
+            }
+            String container = entityType + "-" + mediaCategory;
+            BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(container);
+            String blobPath = entityId + "/" + strictSanitizeBlobName(stripQuotes(blobName));
             validateBlobName(blobPath);
             if (!containerClient.exists()) {
                 log.warn("Container '{}' does not exist", containerClient.getBlobContainerName());
@@ -173,15 +255,146 @@ public class AzureBlobService {
     }
 
     /**
-     * Generates a download link with SAS token valid for 1 hour for the given blob.
+     * Legacy method for backward compatibility - downloads a blob for a vehicle.
+     * Attempts to find the blob in both images and videos containers.
+     *
+     * @deprecated Use downloadBlobForVehicle with mediaCategory instead
      */
-    public String generateDownloadLink(Long vehicleId, String blobName) {
-        String container = "vehicles";
+    @Deprecated
+    public byte[] downloadBlob(String blobName, Long vehicleId) {
+        // Try images first, then videos
+        try {
+            return downloadBlobForVehicle(blobName, vehicleId, "images");
+        } catch (NotFoundException e) {
+            return downloadBlobForVehicle(blobName, vehicleId, "videos");
+        }
+    }
+
+    /**
+     * Generates a download link with SAS token for a vehicle.
+     */
+    public String generateDownloadLinkForVehicle(Long vehicleId, String blobName, String mediaCategory) {
+        return generateDownloadLink(vehicleId, blobName, "vehicles", mediaCategory);
+    }
+
+    /**
+     * Generates a download link with SAS token for a customer.
+     */
+    public String generateDownloadLinkForCustomer(Long customerId, String blobName, String mediaCategory) {
+        return generateDownloadLink(customerId, blobName, "customers", mediaCategory);
+    }
+
+    /**
+     * Generic method to generate a download link with SAS token valid for 1 hour.
+     */
+    private String generateDownloadLink(Long entityId, String blobName, String entityType, String mediaCategory) {
+        if (mediaCategory == null || (!mediaCategory.equals("images") && !mediaCategory.equals("videos"))) {
+            throw new IllegalArgumentException("mediaCategory must be 'images' or 'videos'");
+        }
+        String container = entityType + "-" + mediaCategory;
         BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(container);
-        String blobPath = vehicleId + "/" + blobName;
+        String blobPath = entityId + "/" + blobName;
         BlockBlobClient blobClient = containerClient.getBlobClient(blobPath).getBlockBlobClient();
         if (!blobClient.exists()) {
             throw new NotFoundException("Blob not found");
+        }
+        BlobSasPermission permission = new BlobSasPermission().setReadPermission(true);
+        OffsetDateTime expiryTime = OffsetDateTime.now().plusHours(1);
+        BlobServiceSasSignatureValues values = new BlobServiceSasSignatureValues(expiryTime, permission)
+                .setStartTime(OffsetDateTime.now())
+                .setContainerName(container)
+                .setBlobName(blobPath);
+        String sasToken = blobClient.generateSas(values);
+        return blobClient.getBlobUrl() + "?" + sasToken;
+    }
+
+    /**
+     * Legacy method for backward compatibility - generates download link for a vehicle.
+     * Attempts to find the blob in both images and videos containers.
+     *
+     * @deprecated Use generateDownloadLinkForVehicle with mediaCategory instead
+     */
+    @Deprecated
+    public String generateDownloadLink(Long vehicleId, String blobName) {
+        // Try images first, then videos
+        try {
+            return generateDownloadLinkForVehicle(vehicleId, blobName, "images");
+        } catch (NotFoundException e) {
+            return generateDownloadLinkForVehicle(vehicleId, blobName, "videos");
+        }
+    }
+
+    /**
+     * Uploads a driver license for a user.
+     */
+    public UploadResult uploadDriverLicense(InputStream fileInput, String fileName, Long userId) {
+        if (fileInput == null) throw new IllegalArgumentException("fileInput is null");
+        if (userId == null) throw new IllegalArgumentException("userId is required");
+
+        String original = fileName == null ? "driver-license" : fileName.trim();
+        String ext = getFileExtension(original);
+        String mediaCategory = detectMediaCategory(ext);
+        if (mediaCategory.equals("other")) throw new IllegalArgumentException("Unsupported file type: " + ext);
+
+        // Container name: users-documents
+        String container = "users-documents";
+        BlobContainerClient containerClient = getOrCreateContainer(container);
+
+        String blobName = generateBlobNameWithPath(userId, original, ext);
+        String sanitizedBlobName = strictSanitizeBlobName(stripQuotes(blobName));
+        validateBlobName(sanitizedBlobName);
+
+        BlockBlobClient strictClient = containerClient.getBlobClient(sanitizedBlobName).getBlockBlobClient();
+        try {
+            byte[] bytes = fileInput.readAllBytes();
+            if (mediaCategory.equals("images")) {
+                uploadImage(strictClient, bytes);
+            } else if (mediaCategory.equals("videos")) {
+                uploadVideo(strictClient, bytes);
+            }
+            String url = strictClient.getBlobUrl();
+            return new UploadResult(container, sanitizedBlobName, url, mediaCategory, original);
+        } catch (Exception e) {
+            log.error("Failed to upload driver license to Azure Blob Storage: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to upload driver license: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Downloads a driver license for a user.
+     */
+    public byte[] downloadDriverLicense(String blobName, Long userId) {
+        try {
+            String container = "users-documents";
+            BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(container);
+            String blobPath = userId + "/" + strictSanitizeBlobName(stripQuotes(blobName));
+            validateBlobName(blobPath);
+            if (!containerClient.exists()) {
+                log.warn("Container '{}' does not exist", containerClient.getBlobContainerName());
+                throw new NotFoundException("Container not found");
+            }
+            var blobClient = containerClient.getBlobClient(blobPath);
+            if (!blobClient.exists()) {
+                log.warn("Blob '{}' does not exist in container '{}'", blobPath, containerClient.getBlobContainerName());
+                throw new NotFoundException("Driver license not found");
+            }
+            return blobClient.openInputStream().readAllBytes();
+        } catch (Exception e) {
+            log.error("Failed to download driver license: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to download driver license: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Generates a download link with SAS token for a driver license.
+     */
+    public String generateDriverLicenseDownloadLink(Long userId, String blobName) {
+        String container = "users-documents";
+        BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(container);
+        String blobPath = userId + "/" + blobName;
+        BlockBlobClient blobClient = containerClient.getBlobClient(blobPath).getBlockBlobClient();
+        if (!blobClient.exists()) {
+            throw new NotFoundException("Driver license not found");
         }
         BlobSasPermission permission = new BlobSasPermission().setReadPermission(true);
         OffsetDateTime expiryTime = OffsetDateTime.now().plusHours(1);
@@ -226,26 +439,6 @@ public class AzureBlobService {
         if (blobName.equals(".") || blobName.equals("..")) {
             throw new IllegalArgumentException("Blob name cannot be '.' or '..'");
         }
-    }
-
-    private static final Pattern CONTAINER_PATTERN = Pattern.compile("^[a-z0-9](?:[a-z0-9-]{1,61}[a-z0-9])?$");
-
-    private String normalizeAndValidateContainerName(String name) {
-        if (name == null || name.isBlank()) return null;
-        String c = name.trim().toLowerCase(Locale.ROOT);
-        // Remove invalid chars
-        c = c.replaceAll("[^a-z0-9-]", "-");
-        // Collapse multiple '-'
-        c = c.replaceAll("-+", "-");
-        // Trim leading/trailing '-'
-        c = c.replaceAll("^-|-$", "");
-        if (c.length() < 3) c = (c + "---").substring(0, 3); // pad to minimum length
-        if (c.length() > 63) c = c.substring(0, 63);
-        if (!CONTAINER_PATTERN.matcher(c).matches()) {
-            log.warn("Container name '{}' invalid after normalization -> '{}'", name, c);
-            throw new IllegalArgumentException("Invalid container name after normalization: " + c);
-        }
-        return c;
     }
 
     private String strictSanitizeBlobName(String name) {

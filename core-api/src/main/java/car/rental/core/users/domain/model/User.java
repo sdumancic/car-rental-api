@@ -26,5 +26,6 @@ public class User {
     private Instant dateModified;
     private Address homeAddress;
     private Address billingAddress;
+    private String driverLicenseBlobId;
     private Boolean active;
 }
