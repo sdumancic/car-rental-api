@@ -65,24 +65,8 @@ public class BillingDetailsResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateBillingDetails(@PathParam("userId") Long userId, @PathParam("id") Long id, @Valid CreateBillingDetailsRequest request) {
-        BillingDetails existing = billingDetailsService.findBillingDetailsById(id);
-        if (existing == null || !existing.getUser().getId().equals(userId)) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-        BillingDetails updated = BillingDetails.builder()
-                .id(id)
-                .cardNumber(request.getCardNumber())
-                .cardHolder(request.getCardHolder())
-                .expiryDate(request.getExpiryDate())
-                .billingAddress(request.getBillingAddress())
-                .provider(request.getProvider())
-                .active(existing.getActive())
-                .user(existing.getUser())
-                .dateCreated(existing.getDateCreated())
-                .dateModified(existing.getDateModified())
-                .build();
-        BillingDetails result = billingDetailsService.updateBillingDetails(updated);
-        return Response.ok(result).build();
+        BillingDetails existing = billingDetailsService.updateBillingDetails(id, request);
+        return Response.ok(existing).build();
     }
 
     @DELETE

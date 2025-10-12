@@ -65,4 +65,18 @@ public class BillingDetailsMapper {
                 .dateModified(entity.getDateModified())
                 .build();
     }
+
+    public static void updateEntity(BillingDetailsEntity entity, BillingDetails domain) {
+        if (entity == null || domain == null) {
+            return;
+        }
+        entity.setCardNumber(domain.getCardNumber());
+        entity.setCardHolder(domain.getCardHolder());
+        entity.setExpiryDate(domain.getExpiryDate());
+        entity.setBillingAddress(domain.getBillingAddress());
+        entity.setProvider(domain.getProvider());
+        entity.setActive(domain.getActive());
+        entity.setUser(UserMapper.toEntity(domain.getUser()));
+        entity.setDateModified(Instant.now());
+    }
 }

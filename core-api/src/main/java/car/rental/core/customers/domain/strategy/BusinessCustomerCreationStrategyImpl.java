@@ -13,12 +13,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class BusinessCustomerCreationStrategyImpl implements CustomerCreationStrategy {
 
-    private final PanacheBusinessCustomerRepository businessCustomerRepository;
+    private final PanacheBusinessCustomerRepository panacheBusinessCustomerRepository;
 
     @Override
     public Customer createCustomer(CreateCustomerRequest request) {
-
         Customer customer = BusinessCustomerMapper.toDomain(request);
-        return businessCustomerRepository.save(customer);
+        return panacheBusinessCustomerRepository.save(customer);
     }
 }

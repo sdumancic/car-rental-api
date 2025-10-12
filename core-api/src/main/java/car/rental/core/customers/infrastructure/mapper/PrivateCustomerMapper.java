@@ -52,7 +52,15 @@ public class PrivateCustomerMapper {
                 .taxNumber(null)
                 .registrationNumber(null)
                 .build();
+    }
 
+    public static void updateEntity(PrivateCustomerEntity entity, Customer domain) {
+        if (entity == null || domain == null) {
+            return;
+        }
+        entity.setDateOfBirth(domain.getDateOfBirth());
+        entity.setDriverLicenseNo(domain.getDriverLicenseNo());
+        // Assuming customerProfile doesn't change, or update if needed
     }
 
 }

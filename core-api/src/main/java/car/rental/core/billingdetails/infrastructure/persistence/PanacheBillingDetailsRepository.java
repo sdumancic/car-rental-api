@@ -4,8 +4,10 @@ import car.rental.core.billingdetails.domain.model.BillingDetails;
 import car.rental.core.billingdetails.domain.repository.BillingDetailsRepository;
 import car.rental.core.billingdetails.infrastructure.BillingDetailsEntity;
 import car.rental.core.billingdetails.infrastructure.mapper.BillingDetailsMapper;
+import car.rental.core.common.exception.ResourceNotFoundException;
 import io.quarkus.panache.common.Parameters;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,6 +32,7 @@ public class PanacheBillingDetailsRepository implements BillingDetailsRepository
         return billingDetailsEntityRepository.listAll().stream().map(BillingDetailsMapper::toDomain).toList();
     }
 
+    @Transactional
     @Override
     public BillingDetails save(BillingDetails billingDetails) {
         BillingDetailsEntity entity = BillingDetailsMapper.toEntity(billingDetails);
@@ -41,6 +44,7 @@ public class PanacheBillingDetailsRepository implements BillingDetailsRepository
         return BillingDetailsMapper.toDomain(entity);
     }
 
+    @Transactional
     @Override
     public void deleteById(Long id) {
         billingDetailsEntityRepository.deleteById(id);
@@ -48,18 +52,24 @@ public class PanacheBillingDetailsRepository implements BillingDetailsRepository
 
     @Override
     public List<BillingDetails> findByUserId(Long userId) {
-        return billingDetailsEntityRepository.find("user.id = :userId", Parameters.with("userId", userId))
+        return billingDetailsEntityRepository.find("user.id = :userId and active = true", Parameters.with("userId", userId))
                 .stream().map(BillingDetailsMapper::toDomain).toList();
     }
 
+    @Transactional
     @Override
     public BillingDetails update(BillingDetails billingDetails) {
-        BillingDetailsEntity entity = BillingDetailsMapper.toEntity(billingDetails);
-        entity.setDateModified(Instant.now());
+        // Hybrid approach: fetch managed entity first, then update fields
+        BillingDetailsEntity entity = billingDetailsEntityRepository.findById(billingDetails.getId());
+        if (entity == null) {
+            throw new ResourceNotFoundException("BillingDetails not found: " + billingDetails.getId());
+        }
+        BillingDetailsMapper.updateEntity(entity, billingDetails); // copies domain state → managed entity
         billingDetailsEntityRepository.persist(entity);
         return BillingDetailsMapper.toDomain(entity);
     }
 
+    @Transactional
     @Override
     public void softDeleteById(Long id) {
         Optional<BillingDetailsEntity> entityOpt = billingDetailsEntityRepository.findByIdOptional(id);

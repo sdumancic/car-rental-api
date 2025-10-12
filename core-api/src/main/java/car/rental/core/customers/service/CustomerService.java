@@ -26,6 +26,7 @@ public class CustomerService {
 
     @Transactional
     public Customer createCustomer(CreateCustomerRequest request) {
+        log.info("CustomerCreationStratgegies {} ", customerCreationStrategies.size());
         if (request.getCustomerType() == null) {
             throw new IllegalArgumentException("Customer type must be provided");
         }

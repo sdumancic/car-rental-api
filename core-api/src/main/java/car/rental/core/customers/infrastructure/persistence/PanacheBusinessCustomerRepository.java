@@ -1,5 +1,6 @@
 package car.rental.core.customers.infrastructure.persistence;
 
+import car.rental.core.common.exception.ResourceNotFoundException;
 import car.rental.core.customers.domain.model.Customer;
 import car.rental.core.customers.domain.repository.CustomerRepository;
 import car.rental.core.customers.infrastructure.mapper.BusinessCustomerMapper;
@@ -7,6 +8,7 @@ import car.rental.core.customers.infrastructure.mapper.CustomerProfileMapper;
 import car.rental.core.users.infrastructure.persistence.UserEntity;
 import car.rental.core.users.infrastructure.persistence.UserEntityRepository;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,6 +34,7 @@ public class PanacheBusinessCustomerRepository implements CustomerRepository {
         return entityRepository.listAll().stream().map(BusinessCustomerMapper::toDomain).toList();
     }
 
+    @Transactional
     @Override
     public Customer save(Customer customer) {
         // Fetch managed UserEntity by id
@@ -47,9 +50,22 @@ public class PanacheBusinessCustomerRepository implements CustomerRepository {
         return BusinessCustomerMapper.toDomain(entity);
     }
 
+    @Transactional
     @Override
     public void deleteById(Long id) {
         entityRepository.deleteById(id);
     }
 
+    @Transactional
+    @Override
+    public Customer update(Customer customer) {
+        // Hybrid approach: fetch managed entity first, then update fields
+        BusinessCustomerEntity entity = entityRepository.findById(customer.getId());
+        if (entity == null) {
+            throw new ResourceNotFoundException("Customer not found: " + customer.getId());
+        }
+        BusinessCustomerMapper.updateEntity(entity, customer); // copies domain state → managed entity
+        entityRepository.persist(entity);
+        return BusinessCustomerMapper.toDomain(entity);
+    }
 }

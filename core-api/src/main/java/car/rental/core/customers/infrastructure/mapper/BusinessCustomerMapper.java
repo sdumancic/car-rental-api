@@ -56,4 +56,13 @@ public class BusinessCustomerMapper {
 
     }
 
+    public static void updateEntity(BusinessCustomerEntity entity, Customer domain) {
+        if (entity == null || domain == null) {
+            return;
+        }
+        entity.setCompanyName(domain.getCompanyName());
+        entity.setTaxNumber(domain.getTaxNumber());
+        entity.setRegistrationNumber(domain.getRegistrationNumber());
+        // Assuming customerProfile doesn't change, or update if needed
+    }
 }
