@@ -23,6 +23,6 @@ public class BusinessCustomerUpdateStrategyImpl implements CustomerUpdateStrateg
         existing.setCompanyName(request.getCompanyName());
         existing.setTaxNumber(request.getTaxNumber());
         existing.setRegistrationNumber(request.getRegistrationNumber());
-        return customerRepository.save(existing);
+        return customerRepository.update(existing);
     }
 }

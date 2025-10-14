@@ -1,14 +1,16 @@
 package car.rental.core.pricing.service;
 
+import car.rental.core.common.exception.ResourceNotFoundException;
 import car.rental.core.pricing.domain.model.Pricing;
+import car.rental.core.pricing.domain.model.PricingCategory;
 import car.rental.core.pricing.domain.model.PricingTier;
+import car.rental.core.pricing.domain.repository.PricingCategoryRepository;
+import car.rental.core.pricing.domain.repository.PricingRepository;
 import car.rental.core.pricing.dto.CreatePricingRequest;
 import car.rental.core.pricing.infrastructure.mapper.PricingMapper;
-import car.rental.core.pricing.infrastructure.persistence.PanachePricingRepository;
 import car.rental.core.vehicle.domain.model.Vehicle;
 import car.rental.core.vehicle.service.VehicleService;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 import java.math.BigDecimal;
@@ -18,40 +20,47 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PricingService {
 
-    private final PanachePricingRepository panachePricingRepository;
-
+    private final PricingRepository pricingRepository;
+    private final PricingCategoryRepository pricingCategoryRepository;
     private final VehicleService vehicleService;
 
-    @Transactional
     public Pricing createPricing(CreatePricingRequest request) {
         Vehicle vehicle = vehicleService.findVehicleById(request.getVehicleId());
         if (vehicle == null) {
             throw new IllegalArgumentException("Vehicle not found");
         }
-        Pricing pricing = PricingMapper.toDomain(request, vehicle);
-        return panachePricingRepository.save(pricing);
+        PricingCategory pricingCategory = pricingCategoryRepository.findById(request.getPricingCategoryId())
+                .orElseThrow(() -> new ResourceNotFoundException("PricingCategory not found"));
+        Pricing pricing = PricingMapper.toDomain(request, vehicle, pricingCategory);
+        return pricingRepository.save(pricing);
     }
 
     public Pricing findPricingById(Long id) {
-        return panachePricingRepository.findById(id).orElse(null);
+        return pricingRepository.findById(id).orElse(null);
     }
 
     public List<Pricing> findPricingByVehicleId(Long vehicleId) {
-        return panachePricingRepository.findByVehicleId(vehicleId);
+        return pricingRepository.findByVehicleId(vehicleId);
     }
 
     public Pricing findActivePricingByVehicleId(Long vehicleId) {
-        return panachePricingRepository.findActiveByVehicleId(vehicleId).orElse(null);
+        return pricingRepository.findActiveByVehicleId(vehicleId).orElse(null);
     }
 
-    @Transactional
-    public Pricing updatePricing(Pricing pricing) {
-        return panachePricingRepository.update(pricing);
+    public Pricing updatePricing(Long id, CreatePricingRequest request) {
+        Vehicle vehicle = vehicleService.findVehicleById(request.getVehicleId());
+        if (vehicle == null) {
+            throw new IllegalArgumentException("Vehicle not found");
+        }
+        PricingCategory pricingCategory = pricingCategoryRepository.findById(request.getPricingCategoryId())
+                .orElseThrow(() -> new ResourceNotFoundException("PricingCategory not found"));
+        Pricing pricing = PricingMapper.toDomain(request, vehicle, pricingCategory);
+        pricing.setId(id);
+        return pricingRepository.update(pricing);
     }
 
-    @Transactional
     public void deletePricingById(Long id) {
-        panachePricingRepository.softDeleteById(id);
+        pricingRepository.softDeleteById(id);
     }
 
     public BigDecimal calculatePrice(Long vehicleId, int rentalDays) {

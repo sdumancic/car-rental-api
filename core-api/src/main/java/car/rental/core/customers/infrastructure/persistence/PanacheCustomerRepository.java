@@ -110,4 +110,9 @@ public class PanacheCustomerRepository implements CustomerRepository {
     public void deleteById(Long id) {
         customerProfileEntityRepository.deleteById(id);
     }
+
+    @Override
+    public Customer update(Customer customer) {
+        return null;
+    }
 }

@@ -1,47 +1,36 @@
 package car.rental.core.equipment.service;
 
+import car.rental.core.common.exception.ResourceNotFoundException;
 import car.rental.core.equipment.domain.model.Equipment;
+import car.rental.core.equipment.domain.repository.EquipmentRepository;
 import car.rental.core.equipment.dto.CreateEquipmentRequest;
 import car.rental.core.equipment.infrastructure.mapper.EquipmentMapper;
-import car.rental.core.equipment.infrastructure.persistence.PanacheEquipmentRepository;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @ApplicationScoped
 @RequiredArgsConstructor
 public class EquipmentService {
 
-    private final PanacheEquipmentRepository panacheEquipmentRepository;
+    private final EquipmentRepository equipmentRepository;
 
-    @Transactional
     public Equipment createEquipment(CreateEquipmentRequest request) {
 
         Equipment equipment = EquipmentMapper.toDomain(request);
-        return panacheEquipmentRepository.save(equipment);
+        return equipmentRepository.save(equipment);
     }
 
     public Equipment findEquipmentById(Long id) {
-        return panacheEquipmentRepository.findById(id).orElse(null);
+        return equipmentRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Equipment not found"));
     }
 
-    @Transactional
     public Equipment updateEquipment(Long id, CreateEquipmentRequest request) {
-        Equipment existing = findEquipmentById(id);
-        if (existing == null) {
-            throw new RuntimeException("Equipment not found");
-        }
-        Equipment updated = Equipment.builder()
-                .id(id)
-                .name(request.getName())
-                .description(request.getDescription())
-                .active(existing.getActive())
-                .build();
-        return panacheEquipmentRepository.update(updated);
+        Equipment equipment = EquipmentMapper.toDomain(request);
+        equipment.setId(id);
+        return equipmentRepository.update(equipment);
     }
 
-    @Transactional
     public void softDeleteEquipment(Long id) {
-        panacheEquipmentRepository.softDeleteById(id);
+        equipmentRepository.softDeleteById(id);
     }
 }

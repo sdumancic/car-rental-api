@@ -4,6 +4,7 @@ import car.rental.core.customers.domain.model.CustomerType;
 import car.rental.core.customers.domain.strategy.CustomerTypeQualifier;
 import car.rental.core.customers.domain.strategy.CustomerUpdateStrategy;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Any;
 import jakarta.enterprise.inject.Instance;
 import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Inject;
@@ -17,6 +18,7 @@ import java.util.Map;
 public class CustomerUpdateStrategyProducer {
 
     @Inject
+    @Any
     Instance<CustomerUpdateStrategy> strategies;
 
     @Produces

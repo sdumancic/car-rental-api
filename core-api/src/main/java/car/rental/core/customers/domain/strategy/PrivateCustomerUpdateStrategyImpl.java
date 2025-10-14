@@ -23,6 +23,6 @@ public class PrivateCustomerUpdateStrategyImpl implements CustomerUpdateStrategy
         existing.setCompanyName(null);
         existing.setTaxNumber(null);
         existing.setRegistrationNumber(null);
-        return customerRepository.save(existing);
+        return customerRepository.update(existing);
     }
 }

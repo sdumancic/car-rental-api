@@ -6,6 +6,7 @@ import car.rental.core.pricing.infrastructure.PricingCategoryEntity;
 import car.rental.core.pricing.infrastructure.mapper.PricingMapper;
 import io.quarkus.panache.common.Parameters;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,6 +32,7 @@ public class PanachePricingCategoryRepository implements PricingCategoryReposito
     }
 
     @Override
+    @Transactional
     public PricingCategory save(PricingCategory pricingCategory) {
         PricingCategoryEntity entity = PricingMapper.toPricingCategoryEntity(pricingCategory);
         if (entity.getId() == null) {
@@ -42,6 +44,7 @@ public class PanachePricingCategoryRepository implements PricingCategoryReposito
     }
 
     @Override
+    @Transactional
     public void deleteById(Long id) {
         pricingCategoryEntityRepository.deleteById(id);
     }
@@ -53,11 +56,13 @@ public class PanachePricingCategoryRepository implements PricingCategoryReposito
     }
 
     @Override
+    @Transactional
     public PricingCategory update(PricingCategory pricingCategory) {
-        PricingCategoryEntity entity = PricingMapper.toPricingCategoryEntity(pricingCategory);
-        entity.setDateModified(Instant.now());
-        pricingCategoryEntityRepository.persist(entity);
-        return PricingMapper.toPricingCategoryDomain(entity);
+        PricingCategoryEntity pricingCategoryEntity = pricingCategoryEntityRepository.findByIdOptional(pricingCategory.getId())
+                .orElseThrow(() -> new IllegalArgumentException("Pricing category with id '" + pricingCategory.getId() + "' does not exist"));
+
+        PricingMapper.updatePricingCategoryEntity(pricingCategoryEntity, pricingCategory);
+        return PricingMapper.toPricingCategoryDomain(pricingCategoryEntity);
     }
 
     @Override

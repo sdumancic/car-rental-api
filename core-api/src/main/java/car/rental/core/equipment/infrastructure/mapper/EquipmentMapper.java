@@ -14,7 +14,7 @@ public class EquipmentMapper {
                 .id(null)
                 .name(request.getName())
                 .description(request.getDescription())
-                .active(request.getActive())
+                .active(request.getActive() != null ? request.getActive() : true)
                 .build();
     }
 
@@ -42,5 +42,14 @@ public class EquipmentMapper {
                 .description(entity.getDescription())
                 .active(entity.getActive())
                 .build();
+    }
+
+    public static void updateEntity(EquipmentEntity entity, Equipment domain) {
+        if (entity == null || domain == null) {
+            return;
+        }
+        entity.setName(domain.getName());
+        entity.setDescription(domain.getDescription());
+        entity.setActive(domain.getActive());
     }
 }

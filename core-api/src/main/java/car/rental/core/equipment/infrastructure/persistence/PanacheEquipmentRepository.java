@@ -1,9 +1,11 @@
 package car.rental.core.equipment.infrastructure.persistence;
 
+import car.rental.core.common.exception.ResourceNotFoundException;
 import car.rental.core.equipment.domain.model.Equipment;
 import car.rental.core.equipment.domain.repository.EquipmentRepository;
 import car.rental.core.equipment.infrastructure.mapper.EquipmentMapper;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -28,6 +30,7 @@ public class PanacheEquipmentRepository implements EquipmentRepository {
         return equipmentEntityRepository.listAll().stream().map(EquipmentMapper::toDomain).toList();
     }
 
+    @Transactional
     @Override
     public Equipment save(Equipment vehicle) {
         EquipmentEntity entity = EquipmentMapper.toEntity(vehicle);
@@ -37,19 +40,27 @@ public class PanacheEquipmentRepository implements EquipmentRepository {
         return EquipmentMapper.toDomain(entity);
     }
 
+    @Transactional
     @Override
     public Equipment update(Equipment equipment) {
-        EquipmentEntity entity = EquipmentMapper.toEntity(equipment);
-        entity.setDateModified(Instant.now());
-        equipmentEntityRepository.persist(entity);
+        EquipmentEntity entity = equipmentEntityRepository.findById(equipment.getId());
+        if (entity == null) {
+            throw new ResourceNotFoundException("Equipment not found for id: " + equipment.getId());
+        }
+        EquipmentMapper.updateEntity(entity, equipment);
         return EquipmentMapper.toDomain(entity);
     }
 
+    @Transactional
     @Override
     public void deleteById(Long id) {
-
+        EquipmentEntity entity = equipmentEntityRepository.findById(id);
+        if (entity != null) {
+            equipmentEntityRepository.delete(entity);
+        }
     }
 
+    @Transactional
     @Override
     public void softDeleteById(Long id) {
         EquipmentEntity entity = equipmentEntityRepository.findById(id);

@@ -1,11 +1,13 @@
 package car.rental.core.pricing.infrastructure.persistence;
 
+import car.rental.core.common.exception.ResourceNotFoundException;
 import car.rental.core.pricing.domain.model.Pricing;
 import car.rental.core.pricing.domain.repository.PricingRepository;
 import car.rental.core.pricing.infrastructure.PricingEntity;
 import car.rental.core.pricing.infrastructure.mapper.PricingMapper;
 import io.quarkus.panache.common.Parameters;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -19,6 +21,7 @@ import java.util.Optional;
 public class PanachePricingRepository implements PricingRepository {
 
     private final PricingEntityRepository pricingEntityRepository;
+    private final PricingCategoryEntityRepository pricingCategoryEntityRepository;
 
     @Override
     public Optional<Pricing> findById(Long id) {
@@ -30,6 +33,7 @@ public class PanachePricingRepository implements PricingRepository {
         return pricingEntityRepository.listAll().stream().map(PricingMapper::toDomain).toList();
     }
 
+    @Transactional
     @Override
     public Pricing save(Pricing pricing) {
         PricingEntity entity = PricingMapper.toEntity(pricing);
@@ -41,6 +45,7 @@ public class PanachePricingRepository implements PricingRepository {
         return PricingMapper.toDomain(entity);
     }
 
+    @Transactional
     @Override
     public void deleteById(Long id) {
         pricingEntityRepository.deleteById(id);
@@ -59,14 +64,18 @@ public class PanachePricingRepository implements PricingRepository {
     }
 
     @Override
+    @Transactional
     public Pricing update(Pricing pricing) {
-        PricingEntity entity = PricingMapper.toEntity(pricing);
-        entity.setDateModified(Instant.now());
-        pricingEntityRepository.persist(entity);
+        PricingEntity entity = pricingEntityRepository.findById(pricing.getId());
+        if (entity == null) {
+            throw new ResourceNotFoundException("Pricing not found for id: " + pricing.getId());
+        }
+        PricingMapper.updateEntity(entity, pricing);
         return PricingMapper.toDomain(entity);
     }
 
     @Override
+    @Transactional
     public void softDeleteById(Long id) {
         Optional<PricingEntity> entityOpt = pricingEntityRepository.findByIdOptional(id);
         if (entityOpt.isPresent()) {

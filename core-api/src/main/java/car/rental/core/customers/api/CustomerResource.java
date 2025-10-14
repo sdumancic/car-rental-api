@@ -43,4 +43,11 @@ public class CustomerResource {
         customerService.deleteCustomer(id);
         return Response.noContent().build();
     }
+
+    @GET
+    @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getCustomerById(@PathParam("id") Long id) {
+        return Response.ok().entity(customerService.findCustomerById(id)).build();
+    }
 }

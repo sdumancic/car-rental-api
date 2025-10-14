@@ -10,6 +10,7 @@ import car.rental.core.pricing.infrastructure.PricingCategoryEntity;
 import car.rental.core.pricing.infrastructure.PricingEntity;
 import car.rental.core.pricing.infrastructure.PricingTierEntity;
 import car.rental.core.vehicle.domain.model.Vehicle;
+import car.rental.core.vehicle.infrastructure.mapper.VehicleMapper;
 
 import java.time.Instant;
 import java.util.List;
@@ -17,22 +18,10 @@ import java.util.stream.Collectors;
 
 public class PricingMapper {
     // --- API → Domain ---
-    public static Pricing toDomain(CreatePricingRequest request, Vehicle vehicle) {
+    public static Pricing toDomain(CreatePricingRequest request, Vehicle vehicle, PricingCategory pricingCategory) {
         if (request == null) {
             return null;
         }
-        List<PricingTier> pricingTiers = request.getPricingTiers().stream()
-                .map(PricingMapper::toPricingTierDomain)
-                .collect(Collectors.toList());
-        PricingCategory pricingCategory = PricingCategory.builder()
-                .id(null)
-                .name(request.getCategoryName())
-                .description(request.getCategoryDescription())
-                .pricingTiers(pricingTiers)
-                .active(true)
-                .dateCreated(Instant.now())
-                .dateModified(Instant.now())
-                .build();
         return Pricing.builder()
                 .id(null)
                 .vehicle(vehicle)
@@ -76,7 +65,7 @@ public class PricingMapper {
         }
         PricingEntity entity = new PricingEntity();
         entity.setId(domain.getId());
-        entity.setVehicle(null); // Set separately if needed
+        entity.setVehicle(VehicleMapper.toEntity(domain.getVehicle()));
         entity.setPricingCategory(toPricingCategoryEntity(domain.getPricingCategory()));
         entity.setActive(domain.getActive());
         entity.setDateCreated(domain.getDateCreated());
@@ -138,7 +127,7 @@ public class PricingMapper {
         PricingCategory pricingCategory = toPricingCategoryDomain(entity.getPricingCategory());
         return Pricing.builder()
                 .id(entity.getId())
-                .vehicle(null // Set separately if needed
+                .vehicle(VehicleMapper.toDomain(entity.getVehicle())
                 )
                 .pricingCategory(pricingCategory)
                 .active(entity.getActive())
@@ -153,5 +142,36 @@ public class PricingMapper {
                 .maxDays(entity.getMaxDays())
                 .price(entity.getPrice())
                 .build();
+    }
+
+    public static void updateEntity(PricingEntity entity, Pricing domain) {
+        if (entity == null || domain == null) {
+            return;
+        }
+        entity.setActive(domain.getActive());
+        entity.setDateModified(Instant.now());
+        // Update PricingCategory
+        if (domain.getPricingCategory() != null) {
+            if (entity.getPricingCategory() == null || !entity.getPricingCategory().getId().equals(domain.getPricingCategory().getId())) {
+                entity.setPricingCategory(toPricingCategoryEntity(domain.getPricingCategory()));
+            } else {
+                updatePricingCategoryEntity(entity.getPricingCategory(), domain.getPricingCategory());
+            }
+        }
+    }
+
+    public static void updatePricingCategoryEntity(PricingCategoryEntity pricingCategory, PricingCategory pricingCategory1) {
+        if (pricingCategory == null || pricingCategory1 == null) {
+            return;
+        }
+        pricingCategory.setName(pricingCategory1.getName());
+        pricingCategory.setDescription(pricingCategory1.getDescription());
+        pricingCategory.setActive(pricingCategory1.getActive());
+        pricingCategory.setDateModified(Instant.now());
+        List<PricingTierEntity> newTiers = pricingCategory1.getPricingTiers().stream()
+                .map(tier -> toPricingTierEntity(tier, pricingCategory))
+                .toList();
+        pricingCategory.getPricingTiers().clear();
+        pricingCategory.getPricingTiers().addAll(newTiers);
     }
 }

@@ -68,4 +68,8 @@ public class PanacheBusinessCustomerRepository implements CustomerRepository {
         entityRepository.persist(entity);
         return BusinessCustomerMapper.toDomain(entity);
     }
+
+    public void persist(BusinessCustomerEntity entity) {
+        entityRepository.persist(entity);
+    }
 }

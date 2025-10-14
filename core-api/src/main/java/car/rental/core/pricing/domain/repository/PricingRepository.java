@@ -14,4 +14,5 @@ public interface PricingRepository extends BaseRepository<Pricing> {
     Pricing update(Pricing pricing);
 
     void softDeleteById(Long id);
+
 }

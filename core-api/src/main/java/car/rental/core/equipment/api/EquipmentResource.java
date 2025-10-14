@@ -26,6 +26,14 @@ public class EquipmentResource {
                 .build();
     }
 
+    @GET
+    @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getEquipment(@PathParam("id") Long id) {
+        Equipment equipment = equipmentService.findEquipmentById(id);
+        return Response.ok(equipment).build();
+    }
+
     @PUT
     @Path("/{id}")
     @Consumes(MediaType.APPLICATION_JSON)
