@@ -29,6 +29,7 @@ public class AzureBlobService {
     @PostConstruct
     void init() {
         log.info("Azure Storage Connection String present: {}", connectionString != null);
+
         this.blobServiceClient = new BlobServiceClientBuilder()
                 .connectionString(connectionString)
                 .buildClient();
@@ -60,13 +61,6 @@ public class AzureBlobService {
      */
     public UploadResult uploadMediaForVehicle(InputStream fileInput, String fileName, Long vehicleId) {
         return uploadMedia(fileInput, fileName, vehicleId, "vehicles");
-    }
-
-    /**
-     * Uploads media for a customer.
-     */
-    public UploadResult uploadMediaForCustomer(InputStream fileInput, String fileName, Long customerId) {
-        return uploadMedia(fileInput, fileName, customerId, "customers");
     }
 
     /**
@@ -148,20 +142,6 @@ public class AzureBlobService {
     }
 
     /**
-     * Deletes a blob for a vehicle from Azure Storage.
-     */
-    public boolean deleteBlobForVehicle(String blobName, Long vehicleId, String mediaCategory) {
-        return deleteBlob(blobName, vehicleId, "vehicles", mediaCategory);
-    }
-
-    /**
-     * Deletes a blob for a customer from Azure Storage.
-     */
-    public boolean deleteBlobForCustomer(String blobName, Long customerId, String mediaCategory) {
-        return deleteBlob(blobName, customerId, "customers", mediaCategory);
-    }
-
-    /**
      * Generic delete method that handles both vehicles and customers.
      */
     private boolean deleteBlob(String blobName, Long entityId, String entityType, String mediaCategory) {
@@ -188,27 +168,6 @@ public class AzureBlobService {
         } catch (Exception e) {
             log.error("Failed to delete blob: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to delete blob: " + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Legacy method for backward compatibility - deletes a blob for a vehicle.
-     * Attempts to find the blob in both images and videos containers.
-     *
-     * @deprecated Use deleteBlobForVehicle with mediaCategory instead
-     */
-    @Deprecated
-    public boolean deleteBlob(String blobName, Long vehicleId) {
-        // Try images first, then videos
-        try {
-            return deleteBlobForVehicle(blobName, vehicleId, "images");
-        } catch (Exception e) {
-            try {
-                return deleteBlobForVehicle(blobName, vehicleId, "videos");
-            } catch (Exception ex) {
-                log.error("Failed to delete blob from both containers: {}", ex.getMessage(), ex);
-                return false;
-            }
         }
     }
 
