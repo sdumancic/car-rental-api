@@ -4,7 +4,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDate;
+import java.time.Instant;
 
 @Getter
 @Setter
@@ -12,6 +12,6 @@ import java.time.LocalDate;
 public class CreateReservationRequest {
     private Long userId;
     private Long vehicleId;
-    private LocalDate startDate;
-    private LocalDate endDate;
+    private Instant startDate;
+    private Instant endDate;
 }

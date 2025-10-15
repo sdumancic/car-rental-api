@@ -1,5 +1,6 @@
 package car.rental.core.vehicleequipment.infrastructure.persistence;
 
+import car.rental.core.equipment.domain.model.Equipment;
 import car.rental.core.vehicleequipment.domain.model.VehicleEquipment;
 import car.rental.core.vehicleequipment.domain.repository.VehicleEquipmentRepository;
 import car.rental.core.vehicleequipment.infrastructure.mapper.VehicleEquipmentMapper;
@@ -20,7 +21,6 @@ public class PanacheVehicleEquipmentRepository implements VehicleEquipmentReposi
 
     @Override
     public Optional<VehicleEquipment> findById(Long id) {
-        // Not applicable for composite key
         return Optional.empty();
     }
 
@@ -50,5 +50,13 @@ public class PanacheVehicleEquipmentRepository implements VehicleEquipmentReposi
         id.setVehicleId(vehicleId);
         id.setEquipmentId(equipmentId);
         vehicleEquipmentEntityRepository.deleteById(id);
+    }
+
+    public List<Equipment> findEquipment(Long vehicleId) {
+        return vehicleEquipmentEntityRepository.find("vehicle.id", vehicleId)
+                .stream()
+                .map(VehicleEquipmentMapper::toDomain)
+                .map(VehicleEquipment::getEquipment)
+                .toList();
     }
 }

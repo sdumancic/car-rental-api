@@ -1,15 +1,14 @@
 package car.rental.core.reservation.service;
 
 import car.rental.core.common.dto.PageResponse;
+import car.rental.core.common.exception.BadRequestException;
+import car.rental.core.common.exception.ResourceNotFoundException;
 import car.rental.core.pricing.domain.model.Pricing;
 import car.rental.core.pricing.domain.repository.PricingRepository;
 import car.rental.core.reservation.domain.model.Reservation;
 import car.rental.core.reservation.domain.model.ReservationStatus;
 import car.rental.core.reservation.domain.repository.ReservationRepository;
-import car.rental.core.reservation.dto.CalculatePriceRequest;
-import car.rental.core.reservation.dto.CreateReservationRequest;
-import car.rental.core.reservation.dto.QueryReservationRequest;
-import car.rental.core.reservation.dto.UpdateReservationRequest;
+import car.rental.core.reservation.dto.*;
 import car.rental.core.users.domain.model.User;
 import car.rental.core.users.domain.repository.UserRepository;
 import car.rental.core.vehicle.domain.model.Vehicle;
@@ -23,7 +22,6 @@ import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -59,7 +57,7 @@ public class ReservationService {
         }
 
         // Calculate price
-        BigDecimal price = calculatePrice(request.getVehicleId(), request.getStartDate(), request.getEndDate());
+        BigDecimal price = calculatePrice(request.getVehicleId(), request.getStartDate(), request.getEndDate()).getPrice();
 
         Reservation reservation = Reservation.builder()
                 .user(user)
@@ -100,25 +98,21 @@ public class ReservationService {
     public Reservation updateReservation(Long id, UpdateReservationRequest request) {
         Reservation existing = findReservationById(id);
         if (existing == null) {
-            throw new RuntimeException("Reservation not found");
+            throw new ResourceNotFoundException("Reservation not found");
         }
 
-        // Validate user exists if provided
-        User user = existing.getUser();
-        if (request.getUserId() != null) {
-            user = userRepository.findById(request.getUserId())
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+        if (request.getUserId() == null) {
+            throw new BadRequestException("UserId must be provided");
         }
 
-        // Validate vehicle exists if provided
-        Vehicle vehicle = existing.getVehicle();
-        if (request.getVehicleId() != null) {
-            vehicle = vehicleRepository.findById(request.getVehicleId())
-                    .orElseThrow(() -> new RuntimeException("Vehicle not found"));
-        }
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        LocalDate startDate = request.getStartDate() != null ? request.getStartDate() : existing.getStartDate();
-        LocalDate endDate = request.getEndDate() != null ? request.getEndDate() : existing.getEndDate();
+        Vehicle vehicle = vehicleRepository.findById(request.getVehicleId())
+                .orElseThrow(() -> new ResourceNotFoundException("Vehicle not found"));
+
+        Instant startDate = request.getStartDate() != null ? request.getStartDate() : existing.getStartDate();
+        Instant endDate = request.getEndDate() != null ? request.getEndDate() : existing.getEndDate();
 
         // Check availability if dates or vehicle changed
         if ((request.getVehicleId() != null && !request.getVehicleId().equals(existing.getVehicle().getId())) ||
@@ -132,7 +126,7 @@ public class ReservationService {
         // Recalculate price if dates changed
         BigDecimal price = existing.getPrice();
         if (request.getStartDate() != null || request.getEndDate() != null) {
-            price = calculatePrice(vehicle.getId(), startDate, endDate);
+            price = calculatePrice(vehicle.getId(), startDate, endDate).getPrice();
         }
 
         Reservation updated = Reservation.builder()
@@ -155,12 +149,11 @@ public class ReservationService {
         reservationRepository.softDeleteById(id);
     }
 
-    public BigDecimal calculateReservationPrice(CalculatePriceRequest request) {
+    public CalculatePriceResponse calculateReservationPrice(CalculatePriceRequest request) {
         return calculatePrice(request.getVehicleId(), request.getStartDate(), request.getEndDate());
     }
 
-    private BigDecimal calculatePrice(Long vehicleId, LocalDate startDate, LocalDate endDate) {
-        // Find active pricing for the vehicle
+    private CalculatePriceResponse calculatePrice(Long vehicleId, Instant startDate, Instant endDate) {
         Pricing pricing = pricingRepository.findActiveByVehicleId(vehicleId).orElse(null);
         if (pricing == null || pricing.getPricingCategory() == null) {
             throw new RuntimeException("No pricing found for the vehicle");
@@ -169,11 +162,19 @@ public class ReservationService {
         long days = ChronoUnit.DAYS.between(startDate, endDate) + 1; // Inclusive days
 
         // Find the appropriate pricing tier
-        return pricing.getPricingCategory().getPricingTiers().stream()
+        BigDecimal price = pricing.getPricingCategory().getPricingTiers().stream()
                 .filter(tier -> days >= tier.getMinDays() && (tier.getMaxDays() == null || days <= tier.getMaxDays()))
                 .findFirst()
                 .map(tier -> tier.getPrice().multiply(BigDecimal.valueOf(days)))
                 .orElseThrow(() -> new RuntimeException("No pricing tier found for " + days + " days"));
+
+        return CalculatePriceResponse.builder()
+                .vehicleId(vehicleId)
+                .startDate(startDate)
+                .endDate(endDate)
+                .days((int) days)
+                .price(price)
+                .build();
     }
 
     private String buildPageUrl(QueryReservationRequest query, int page) {

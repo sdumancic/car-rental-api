@@ -9,7 +9,7 @@ import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
-import java.time.LocalDate;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -137,7 +137,7 @@ public class PanacheReservationRepository implements ReservationRepository {
     }
 
     @Override
-    public boolean isVehicleAvailable(Long vehicleId, LocalDate startDate, LocalDate endDate, Long excludeReservationId) {
+    public boolean isVehicleAvailable(Long vehicleId, Instant startDate, Instant endDate, Long excludeReservationId) {
         StringBuilder queryStr = new StringBuilder("active = :active and vehicle.id = :vehicleId and status != :cancelledStatus");
         Parameters params = Parameters.with("active", true)
                 .and("vehicleId", vehicleId)

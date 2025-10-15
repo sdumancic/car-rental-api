@@ -8,6 +8,8 @@ import car.rental.core.equipment.infrastructure.mapper.EquipmentMapper;
 import jakarta.enterprise.context.ApplicationScoped;
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
+
 @ApplicationScoped
 @RequiredArgsConstructor
 public class EquipmentService {
@@ -32,5 +34,9 @@ public class EquipmentService {
 
     public void softDeleteEquipment(Long id) {
         equipmentRepository.softDeleteById(id);
+    }
+
+    public List<Equipment> findAll() {
+        return equipmentRepository.findAll();
     }
 }

@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDate;
+import java.time.Instant;
 
 @Getter
 @Setter
@@ -15,8 +15,8 @@ public class QueryReservationRequest {
     private Integer size;
     private Long userId;
     private Long vehicleId;
-    private LocalDate startDate;
-    private LocalDate endDate;
+    private Instant startDate;
+    private Instant endDate;
     private ReservationStatus status;
     private String sort;
 }

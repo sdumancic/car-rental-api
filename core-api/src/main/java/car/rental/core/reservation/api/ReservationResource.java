@@ -3,10 +3,7 @@ package car.rental.core.reservation.api;
 import car.rental.core.common.dto.PageResponse;
 import car.rental.core.reservation.domain.model.Reservation;
 import car.rental.core.reservation.domain.model.ReservationStatus;
-import car.rental.core.reservation.dto.CalculatePriceRequest;
-import car.rental.core.reservation.dto.CreateReservationRequest;
-import car.rental.core.reservation.dto.QueryReservationRequest;
-import car.rental.core.reservation.dto.UpdateReservationRequest;
+import car.rental.core.reservation.dto.*;
 import car.rental.core.reservation.service.ReservationService;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
@@ -15,8 +12,7 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.Instant;
 
 @RequestScoped
 @Path("/v1/reservations")
@@ -59,8 +55,8 @@ public class ReservationResource {
             @QueryParam("page") @DefaultValue("0") Integer page,
             @QueryParam("size") @DefaultValue("10") Integer size) {
 
-        LocalDate startDate = startDateStr != null ? LocalDate.parse(startDateStr) : null;
-        LocalDate endDate = endDateStr != null ? LocalDate.parse(endDateStr) : null;
+        Instant startDate = startDateStr != null ? Instant.parse(startDateStr) : null;
+        Instant endDate = endDateStr != null ? Instant.parse(endDateStr) : null;
 
         QueryReservationRequest query = QueryReservationRequest.builder()
                 .userId(userId)
@@ -100,7 +96,7 @@ public class ReservationResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response calculatePrice(@Valid CalculatePriceRequest request) {
-        BigDecimal price = reservationService.calculateReservationPrice(request);
-        return Response.ok(price).build();
+        CalculatePriceResponse response = reservationService.calculateReservationPrice(request);
+        return Response.ok(response).build();
     }
 }

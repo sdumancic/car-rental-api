@@ -6,11 +6,12 @@ import car.rental.core.vehicle.domain.model.Vehicle;
 import car.rental.core.vehicle.service.VehicleService;
 import car.rental.core.vehicleequipment.domain.model.VehicleEquipment;
 import car.rental.core.vehicleequipment.dto.CreateVehicleEquipmentRequest;
-import car.rental.core.vehicleequipment.dto.UpdateVehicleEquipmentRequest;
 import car.rental.core.vehicleequipment.infrastructure.persistence.PanacheVehicleEquipmentRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
 
 @ApplicationScoped
 @RequiredArgsConstructor
@@ -33,14 +34,7 @@ public class VehicleEquipmentService {
         panacheVehicleEquipmentRepository.deleteByVehicleIdAndEquipmentId(vehicleId, equipmentId);
     }
 
-    @Transactional
-    public VehicleEquipment updateVehicleEquipment(Long vehicleId, Long equipmentId, UpdateVehicleEquipmentRequest request) {
-        // Delete the old association
-        panacheVehicleEquipmentRepository.deleteByVehicleIdAndEquipmentId(vehicleId, equipmentId);
-        // Create new association with new equipment
-        final Vehicle vehicleById = vehicleService.findVehicleById(vehicleId);
-        final Equipment equipmentById = equipmentService.findEquipmentById(request.getEquipmentId());
-        VehicleEquipment vehicleEquipment = VehicleEquipment.builder().vehicle(vehicleById).equipment(equipmentById).build();
-        return panacheVehicleEquipmentRepository.save(vehicleEquipment);
+    public List<Equipment> findEquipment(Long vehicleId) {
+        return panacheVehicleEquipmentRepository.findEquipment(vehicleId);
     }
 }

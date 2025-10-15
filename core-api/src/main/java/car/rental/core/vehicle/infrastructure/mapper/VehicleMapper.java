@@ -69,4 +69,21 @@ public class VehicleMapper {
                 .transmission(entity.getTransmission())
                 .build();
     }
+
+    public static void updateEntity(VehicleEntity entity, Vehicle domain) {
+        if (entity == null || domain == null) {
+            return;
+        }
+        entity.setMake(domain.getMake());
+        entity.setModel(domain.getModel());
+        entity.setYear(domain.getYear());
+        entity.setVin(domain.getVin());
+        entity.setLicensePlate(domain.getLicensePlate());
+        entity.setVehicleType(domain.getVehicleType());
+        entity.setStatus(domain.getStatus());
+        entity.setPassengers(domain.getPassengers());
+        entity.setDoors(domain.getDoors());
+        entity.setFuelType(domain.getFuelType());
+        entity.setTransmission(domain.getTransmission());
+    }
 }

@@ -4,7 +4,7 @@ import car.rental.core.common.domain.BaseRepository;
 import car.rental.core.reservation.domain.model.Reservation;
 import car.rental.core.reservation.dto.QueryReservationRequest;
 
-import java.time.LocalDate;
+import java.time.Instant;
 import java.util.List;
 
 public interface ReservationRepository extends BaseRepository<Reservation> {
@@ -16,5 +16,5 @@ public interface ReservationRepository extends BaseRepository<Reservation> {
 
     void softDeleteById(Long id);
 
-    boolean isVehicleAvailable(Long vehicleId, LocalDate startDate, LocalDate endDate, Long excludeReservationId);
+    boolean isVehicleAvailable(Long vehicleId, Instant startDate, Instant endDate, Long excludeReservationId);
 }

@@ -10,6 +10,8 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
+import java.util.List;
+
 @RequestScoped
 @Path("/v1/equipment")
 public class EquipmentResource {
@@ -31,6 +33,13 @@ public class EquipmentResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getEquipment(@PathParam("id") Long id) {
         Equipment equipment = equipmentService.findEquipmentById(id);
+        return Response.ok(equipment).build();
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response findAllEquipment() {
+        List<Equipment> equipment = equipmentService.findAll();
         return Response.ok(equipment).build();
     }
 

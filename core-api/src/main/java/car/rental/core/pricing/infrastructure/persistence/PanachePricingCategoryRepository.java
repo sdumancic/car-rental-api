@@ -1,5 +1,6 @@
 package car.rental.core.pricing.infrastructure.persistence;
 
+import car.rental.core.common.exception.ResourceNotFoundException;
 import car.rental.core.pricing.domain.model.PricingCategory;
 import car.rental.core.pricing.domain.repository.PricingCategoryRepository;
 import car.rental.core.pricing.infrastructure.PricingCategoryEntity;
@@ -59,7 +60,7 @@ public class PanachePricingCategoryRepository implements PricingCategoryReposito
     @Transactional
     public PricingCategory update(PricingCategory pricingCategory) {
         PricingCategoryEntity pricingCategoryEntity = pricingCategoryEntityRepository.findByIdOptional(pricingCategory.getId())
-                .orElseThrow(() -> new IllegalArgumentException("Pricing category with id '" + pricingCategory.getId() + "' does not exist"));
+                .orElseThrow(() -> new ResourceNotFoundException("Pricing category with id '" + pricingCategory.getId() + "' does not exist"));
 
         PricingMapper.updatePricingCategoryEntity(pricingCategoryEntity, pricingCategory);
         return PricingMapper.toPricingCategoryDomain(pricingCategoryEntity);

@@ -1,5 +1,6 @@
 package car.rental.core.vehicle.infrastructure.persistence;
 
+import car.rental.core.common.exception.ResourceNotFoundException;
 import car.rental.core.common.util.SortUtils;
 import car.rental.core.vehicle.domain.model.Vehicle;
 import car.rental.core.vehicle.domain.repository.VehicleRepository;
@@ -7,6 +8,7 @@ import car.rental.core.vehicle.dto.QueryVehicleRequest;
 import car.rental.core.vehicle.infrastructure.mapper.VehicleMapper;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -155,11 +157,13 @@ public class PanacheVehicleRepository implements VehicleRepository {
     }
 
     @Override
+    @Transactional
     public Vehicle update(Vehicle vehicle) {
-        VehicleEntity entity = VehicleMapper.toEntity(vehicle);
-        entity.setDateModified(Instant.now());
-        vehicleEntityRepository.persist(entity);
-        return VehicleMapper.toDomain(entity);
+        VehicleEntity vehicleEntity = vehicleEntityRepository.findByIdOptional(vehicle.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Vehicle with id '" + vehicle.getId() + "' does not exist"));
+        VehicleMapper.updateEntity(vehicleEntity, vehicle);
+        vehicleEntity.setDateModified(Instant.now());
+        return VehicleMapper.toDomain(vehicleEntity);
     }
 
     @Override

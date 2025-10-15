@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.Instant;
 
 @Entity
 @Table(name = "reservations", indexes = {
@@ -31,10 +31,10 @@ public class ReservationEntity extends BaseEntity {
     private VehicleEntity vehicle;
 
     @Column(name = "start_date", nullable = false)
-    private LocalDate startDate;
+    private Instant startDate;
 
     @Column(name = "end_date", nullable = false)
-    private LocalDate endDate;
+    private Instant endDate;
 
     @Column(name = "price", nullable = false, precision = 10, scale = 2)
     private BigDecimal price;

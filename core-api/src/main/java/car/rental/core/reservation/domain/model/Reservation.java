@@ -9,7 +9,6 @@ import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.LocalDate;
 
 /**
  * Domain model for Reservation.
@@ -23,8 +22,8 @@ public class Reservation {
     private Long id;
     private User user;
     private Vehicle vehicle;
-    private LocalDate startDate;
-    private LocalDate endDate;
+    private Instant startDate;
+    private Instant endDate;
     private BigDecimal price;
     private ReservationStatus status;
     private Instant dateCreated;

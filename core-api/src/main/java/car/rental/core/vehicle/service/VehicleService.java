@@ -1,11 +1,12 @@
 package car.rental.core.vehicle.service;
 
 import car.rental.core.common.dto.PageResponse;
+import car.rental.core.common.exception.ResourceNotFoundException;
 import car.rental.core.vehicle.domain.model.Vehicle;
+import car.rental.core.vehicle.domain.repository.VehicleRepository;
 import car.rental.core.vehicle.dto.CreateVehicleRequest;
 import car.rental.core.vehicle.dto.QueryVehicleRequest;
 import car.rental.core.vehicle.infrastructure.mapper.VehicleMapper;
-import car.rental.core.vehicle.infrastructure.persistence.PanacheVehicleRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -18,21 +19,21 @@ import java.util.List;
 @RequiredArgsConstructor
 public class VehicleService {
 
-    private final PanacheVehicleRepository panacheVehicleRepository;
+    private final VehicleRepository vehicleRepository;
 
     @Transactional
     public Vehicle createVehicle(CreateVehicleRequest request) {
         Vehicle vehicle = VehicleMapper.toDomain(request);
-        return panacheVehicleRepository.save(vehicle);
+        return vehicleRepository.save(vehicle);
     }
 
     public Vehicle findVehicleById(Long id) {
-        return panacheVehicleRepository.findById(id).orElse(null);
+        return vehicleRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Vehicle not found"));
     }
 
     public PageResponse<Vehicle> findVehicles(QueryVehicleRequest query) {
-        List<Vehicle> vehicles = panacheVehicleRepository.findByQuery(query);
-        long totalRecords = panacheVehicleRepository.countByQuery(query);
+        List<Vehicle> vehicles = vehicleRepository.findByQuery(query);
+        long totalRecords = vehicleRepository.countByQuery(query);
 
         return PageResponse.<Vehicle>builder()
                 .data(vehicles)
@@ -91,30 +92,13 @@ public class VehicleService {
 
     @Transactional
     public Vehicle updateVehicle(Long id, CreateVehicleRequest request) {
-        Vehicle existing = findVehicleById(id);
-        if (existing == null) {
-            throw new RuntimeException("Vehicle not found");
-        }
-        Vehicle updated = Vehicle.builder()
-                .id(id)
-                .make(request.getMake())
-                .model(request.getModel())
-                .year(request.getYear())
-                .vin(request.getVin())
-                .licensePlate(request.getLicensePlate())
-                .vehicleType(request.getVehicleType())
-                .status(request.getStatus())
-                .passengers(request.getPassengers())
-                .doors(request.getDoors())
-                .fuelType(request.getFuelType())
-                .transmission(request.getTransmission())
-                .active(existing.getActive())
-                .build();
-        return panacheVehicleRepository.update(updated);
+        Vehicle vehicle = VehicleMapper.toDomain(request);
+        vehicle.setId(id);
+        return vehicleRepository.update(vehicle);
     }
 
     @Transactional
     public void softDeleteVehicle(Long id) {
-        panacheVehicleRepository.softDeleteById(id);
+        vehicleRepository.softDeleteById(id);
     }
 }
