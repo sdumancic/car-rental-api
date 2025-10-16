@@ -77,10 +77,10 @@
             <column name="vehicle_id" type="bigint">
                 <constraints nullable="false"/>
             </column>
-            <column name="start_date" type="date">
+            <column name="start_date" type="datetime2">
                 <constraints nullable="false"/>
             </column>
-            <column name="end_date" type="date">
+            <column name="end_date" type="datetime2">
                 <constraints nullable="false"/>
             </column>
             <column name="price" type="decimal(10,2)">
@@ -390,6 +390,10 @@
             <column name="driver_license_blob_id" type="varchar(255)"/>
         </addColumn>
     </changeSet>
-    <!-- Line 33 correction: Ensure first_name is not nullable if required -->
-    <!-- Line 50 correction: Ensure vehicles.active defaultValue is true and not nullable -->
+    <changeSet id="20251016-01-add-keycloak-id-to-users" author="copilot">
+        <addColumn tableName="users">
+            <column name="keycloak_id" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

@@ -76,6 +76,7 @@ public class UserMapper {
         }
         entity.setActive(domain.getActive());
         entity.setDriverLicenseBlobId(domain.getDriverLicenseBlobId());
+        entity.setKeycloakId(domain.getKeycloakId());
         return entity;
     }
 
@@ -113,8 +114,11 @@ public class UserMapper {
                 .dateModified(entity.getDateModified())
                 .homeAddress(homeAddress)
                 .billingAddress(billingAddress)
+                .phoneNumber(entity.getPhoneNumber())
+                .mobileNumber(entity.getMobileNumber())
                 .driverLicenseBlobId(entity.getDriverLicenseBlobId())
                 .active(entity.getActive())
+                .keycloakId(entity.getKeycloakId())
                 .build();
     }
 
@@ -156,3 +160,5 @@ public class UserMapper {
     }
 
 }
+
+

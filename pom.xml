@@ -55,7 +55,16 @@
                 <artifactId>azure-storage-blob</artifactId>
                 <version>${azure.storage.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>io.quarkus</groupId>
+                <artifactId>quarkus-keycloak-authorization</artifactId>
+                <version>${quarkus.platform.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.quarkus</groupId>
+                <artifactId>quarkus-oidc</artifactId>
+                <version>${quarkus.platform.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

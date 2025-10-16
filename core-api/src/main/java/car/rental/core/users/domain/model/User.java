@@ -28,4 +28,5 @@ public class User {
     private Address billingAddress;
     private String driverLicenseBlobId;
     private Boolean active;
+    private String keycloakId;
 }

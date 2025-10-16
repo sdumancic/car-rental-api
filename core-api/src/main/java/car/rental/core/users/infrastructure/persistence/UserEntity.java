@@ -77,7 +77,10 @@ public class UserEntity extends BaseEntity {
 
     @Column(name = "driver_license_blob_id")
     private String driverLicenseBlobId;
+    @Column(name = "keycloak_id")
+    private String keycloakId;
 
     @Column(name = "active", nullable = false)
     private Boolean active = true;
 }
+

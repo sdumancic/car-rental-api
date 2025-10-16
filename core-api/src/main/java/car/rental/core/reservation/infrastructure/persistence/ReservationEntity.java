@@ -30,10 +30,10 @@ public class ReservationEntity extends BaseEntity {
     @JoinColumn(name = "vehicle_id", nullable = false)
     private VehicleEntity vehicle;
 
-    @Column(name = "start_date", nullable = false)
+    @Column(name = "start_date", columnDefinition = "datetime2")
     private Instant startDate;
 
-    @Column(name = "end_date", nullable = false)
+    @Column(name = "end_date", columnDefinition = "datetime2")
     private Instant endDate;
 
     @Column(name = "price", nullable = false, precision = 10, scale = 2)

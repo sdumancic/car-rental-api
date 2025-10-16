@@ -20,10 +20,15 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final AzureBlobService azureBlobService;
+    private final KeycloakUserService keycloakUserService;
 
     @Transactional
     public User createUser(CreateUserRequest request) {
+        // Create user in Keycloak first
+        String keycloakId = keycloakUserService.createUserInKeycloak(request);
+        // Then create user in database
         User user = UserMapper.toDomain(request);
+        user.setKeycloakId(keycloakId);
         return userRepository.save(user);
     }
 
@@ -83,3 +88,4 @@ public class UserService {
         return azureBlobService.generateDriverLicenseDownloadLink(userId, user.getDriverLicenseBlobId());
     }
 }
+
