@@ -13,7 +13,13 @@
     <dependencies>
         <dependency>
             <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-keycloak-authorization</artifactId>        </dependency>        <dependency>            <groupId>org.keycloak</groupId>            <artifactId>keycloak-admin-client</artifactId>            <version>26.0.7</version>        </dependency>
+            <artifactId>quarkus-keycloak-authorization</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.keycloak</groupId>
+            <artifactId>keycloak-admin-client</artifactId>
+            <version>26.0.7</version>
+        </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-oidc</artifactId>
@@ -49,6 +55,10 @@
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-redis-cache</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-redis-client</artifactId>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>

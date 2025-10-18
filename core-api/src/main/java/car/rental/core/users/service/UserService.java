@@ -7,20 +7,27 @@ import car.rental.core.common.exception.ResourceNotFoundException;
 import car.rental.core.users.domain.model.User;
 import car.rental.core.users.domain.repository.UserRepository;
 import car.rental.core.users.dto.CreateUserRequest;
+import car.rental.core.users.dto.LoginUserRequest;
 import car.rental.core.users.dto.QueryUserRequest;
+import car.rental.core.users.dto.TokenResponse;
 import car.rental.core.users.infrastructure.mapper.UserMapper;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.core.UriInfo;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @ApplicationScoped
 @RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
     private final AzureBlobService azureBlobService;
-    private final KeycloakUserService keycloakUserService;
+    private final KeycloakUserService keycloakUserService; // still used for user creation
+    private final KeycloakTokenService keycloakTokenService; // new token handling service
+    private final RefreshTokenStore refreshTokenStore; // Redis-backed refresh token storage
 
     @Transactional
     public User createUser(CreateUserRequest request) {
@@ -50,6 +57,10 @@ public class UserService {
             throw new ResourceNotFoundException("User not found");
         }
         userRepository.softDeleteById(id);
+        // Optionally remove refresh token
+        if (existing.getUsername() != null) {
+            refreshTokenStore.delete(existing.getUsername());
+        }
     }
 
     public PageResponse<User> findUsers(QueryUserRequest query, UriInfo uriInfo) {
@@ -87,5 +98,32 @@ public class UserService {
         }
         return azureBlobService.generateDriverLicenseDownloadLink(userId, user.getDriverLicenseBlobId());
     }
-}
 
+    // New login returning tokens and persisting refresh token in Redis with TTL
+    public TokenResponse login(@Valid LoginUserRequest request) {
+        TokenResponse tokens = keycloakTokenService.login(request);
+        log.info("tokens: {}", tokens);
+        if (tokens.getRefreshToken() != null) {
+            log.info("refresh token: {} {} {}", tokens.getRefreshToken(), tokens.getRefreshExpiresIn(), request.getUsername());
+            refreshTokenStore.save(request.getUsername(), tokens.getRefreshToken(), tokens.getRefreshExpiresIn());
+        }
+        return tokens;
+    }
+
+    // Legacy access-token-only helper for existing endpoints expecting a String
+    public String loginAccessToken(@Valid LoginUserRequest request) {
+        return login(request).getAccessToken();
+    }
+
+    // Refresh flow: retrieve refresh token from Redis by username and call Keycloak refresh endpoint
+    public TokenResponse refresh(String username) {
+        var stored = refreshTokenStore.get(username)
+                .orElseThrow(() -> new ResourceNotFoundException("Refresh token not found or expired"));
+        TokenResponse tokens = keycloakTokenService.refresh(stored);
+        // Update stored refresh token (rotation) with new TTL
+        if (tokens.getRefreshToken() != null) {
+            refreshTokenStore.save(username, tokens.getRefreshToken(), tokens.getRefreshExpiresIn());
+        }
+        return tokens;
+    }
+}
