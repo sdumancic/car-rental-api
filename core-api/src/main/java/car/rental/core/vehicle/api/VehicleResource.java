@@ -7,6 +7,7 @@ import car.rental.core.vehicle.domain.model.Vehicle;
 import car.rental.core.vehicle.domain.model.VehicleType;
 import car.rental.core.vehicle.dto.CreateVehicleRequest;
 import car.rental.core.vehicle.dto.QueryVehicleRequest;
+import car.rental.core.vehicle.dto.VehicleAvailabilityDto;
 import car.rental.core.vehicle.service.VehicleService;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
@@ -54,28 +55,27 @@ public class VehicleResource {
             @QueryParam("transmission") String transmission,
             @QueryParam("sort") String sort,
             @QueryParam("page") @DefaultValue("0") Integer page,
-            @QueryParam("size") @DefaultValue("10") Integer size) {
+            @QueryParam("size") @DefaultValue("10") Integer size,
+            @QueryParam("reservationStart") String reservationStart,
+            @QueryParam("reservationEnd") String reservationEnd) {
 
         QueryVehicleRequest query = new QueryVehicleRequest();
         query.setMake(make);
         query.setModel(model);
         query.setYear(year);
-        if (vehicleType != null) {
-            query.setVehicleType(VehicleType.valueOf(vehicleType.toUpperCase()));
-        }
+        query.setVehicleType(vehicleType != null ? VehicleType.valueOf(vehicleType) : null);
         query.setPassengers(passengers);
         query.setDoors(doors);
-        if (fuelType != null) {
-            query.setFuelType(FuelType.valueOf(fuelType.toUpperCase()));
-        }
-        if (transmission != null) {
-            query.setTransmission(TransmissionType.valueOf(transmission.toUpperCase()));
-        }
+        query.setFuelType(fuelType != null ? FuelType.valueOf(fuelType) : null);
+        query.setTransmission(transmission != null ? TransmissionType.valueOf(transmission) : null);
         query.setSort(sort);
         query.setPage(page);
         query.setSize(size);
+        query.setReservationStart(reservationStart);
+        query.setReservationEnd(reservationEnd);
 
-        PageResponse<Vehicle> response = vehicleService.findVehicles(query);
+        // Call the new service method that returns vehicles with availability flag
+        PageResponse<VehicleAvailabilityDto> response = vehicleService.findVehiclesWithAvailability(query);
         return Response.status(Response.Status.OK)
                 .entity(response)
                 .build();

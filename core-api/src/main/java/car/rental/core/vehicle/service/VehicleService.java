@@ -2,10 +2,12 @@ package car.rental.core.vehicle.service;
 
 import car.rental.core.common.dto.PageResponse;
 import car.rental.core.common.exception.ResourceNotFoundException;
+import car.rental.core.reservation.domain.repository.ReservationRepository;
 import car.rental.core.vehicle.domain.model.Vehicle;
 import car.rental.core.vehicle.domain.repository.VehicleRepository;
 import car.rental.core.vehicle.dto.CreateVehicleRequest;
 import car.rental.core.vehicle.dto.QueryVehicleRequest;
+import car.rental.core.vehicle.dto.VehicleAvailabilityDto;
 import car.rental.core.vehicle.infrastructure.mapper.VehicleMapper;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
@@ -13,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 @ApplicationScoped
@@ -20,6 +24,7 @@ import java.util.List;
 public class VehicleService {
 
     private final VehicleRepository vehicleRepository;
+    private final ReservationRepository reservationRepository;
 
     @Transactional
     public Vehicle createVehicle(CreateVehicleRequest request) {
@@ -100,5 +105,32 @@ public class VehicleService {
     @Transactional
     public void softDeleteVehicle(Long id) {
         vehicleRepository.softDeleteById(id);
+    }
+
+    public PageResponse<VehicleAvailabilityDto> findVehiclesWithAvailability(QueryVehicleRequest query) {
+        List<Vehicle> vehicles = vehicleRepository.findByQuery(query);
+        List<VehicleAvailabilityDto> result = new ArrayList<>();
+        Instant start = null;
+        Instant end = null;
+        if (query.getReservationStart() != null && query.getReservationEnd() != null) {
+            start = Instant.parse(query.getReservationStart().trim());
+            end = Instant.parse(query.getReservationEnd().trim());
+        }
+        for (Vehicle v : vehicles) {
+            boolean available = true;
+            if (start != null) {
+                available = reservationRepository.isVehicleAvailable(v.getId(), start, end, null);
+            }
+            result.add(new VehicleAvailabilityDto(v, available));
+        }
+        long totalRecords = vehicleRepository.countByQuery(query);
+        return PageResponse.<VehicleAvailabilityDto>builder()
+                .data(result)
+                .metadata(PageResponse.PageMetadata.builder()
+                        .page(query.getPage())
+                        .size(query.getSize())
+                        .totalRecords(totalRecords)
+                        .build())
+                .build();
     }
 }

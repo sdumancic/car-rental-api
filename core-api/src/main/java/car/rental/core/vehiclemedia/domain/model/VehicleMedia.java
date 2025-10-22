@@ -17,4 +17,8 @@ public class VehicleMedia {
     private String fileType;
     private String url;
     private Vehicle vehicle;
+
+    public VehicleMediaType getType() {
+        return vehicleMediaType;
+    }
 }

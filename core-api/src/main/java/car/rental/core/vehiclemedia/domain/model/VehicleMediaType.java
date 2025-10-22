@@ -1,6 +1,7 @@
 package car.rental.core.vehiclemedia.domain.model;
 
 public enum VehicleMediaType {
+    COVER_IMAGE,
     FRONT_IMAGE,
     BACK_IMAGE,
     SIDE_IMAGE,

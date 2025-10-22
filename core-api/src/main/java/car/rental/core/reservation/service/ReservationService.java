@@ -17,6 +17,9 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.eclipse.microprofile.reactive.messaging.Channel;
+import org.eclipse.microprofile.reactive.messaging.Emitter;
 
 import java.math.BigDecimal;
 import java.net.URLEncoder;
@@ -25,6 +28,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
+@Slf4j
 @ApplicationScoped
 @RequiredArgsConstructor
 public class ReservationService {
@@ -41,19 +45,23 @@ public class ReservationService {
     @Inject
     PricingRepository pricingRepository;
 
+    @Inject
+    @Channel("payments-out")
+    Emitter<ReservationPaymentEvent> paymentEmitter;
+
     @Transactional
     public Reservation createReservation(CreateReservationRequest request) {
         // Validate user exists
         User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new BadRequestException("User not found"));
 
         // Validate vehicle exists
         Vehicle vehicle = vehicleRepository.findById(request.getVehicleId())
-                .orElseThrow(() -> new RuntimeException("Vehicle not found"));
+                .orElseThrow(() -> new BadRequestException("Vehicle not found"));
 
         // Check availability
         if (!reservationRepository.isVehicleAvailable(request.getVehicleId(), request.getStartDate(), request.getEndDate(), null)) {
-            throw new RuntimeException("Vehicle is not available for the selected dates");
+            throw new BadRequestException("Vehicle is not available for the selected dates");
         }
 
         // Calculate price
@@ -156,7 +164,7 @@ public class ReservationService {
     private CalculatePriceResponse calculatePrice(Long vehicleId, Instant startDate, Instant endDate) {
         Pricing pricing = pricingRepository.findActiveByVehicleId(vehicleId).orElse(null);
         if (pricing == null || pricing.getPricingCategory() == null) {
-            throw new RuntimeException("No pricing found for the vehicle");
+            throw new ResourceNotFoundException("No pricing found for the vehicle");
         }
 
         long days = ChronoUnit.DAYS.between(startDate, endDate) + 1; // Inclusive days
@@ -205,5 +213,55 @@ public class ReservationService {
         }
 
         return url.toString();
+    }
+
+    @Transactional
+    public Reservation completeAndSendEvent(Long id, Reservation paymentData) {
+        Reservation reservation = findReservationById(id);
+        if (reservation == null) {
+            throw new ResourceNotFoundException("Reservation not found");
+        }
+        reservation.setStatus(ReservationStatus.CONFIRMED);
+        // Optionally update payment info from paymentData if needed
+        Reservation updated = updateReservationStatus(id, reservation);
+        sendEvent(updated);
+        return updated;
+    }
+
+    public Reservation updateReservationStatus(Long id, Reservation reservation) {
+        return reservationRepository.update(reservation);
+    }
+
+    public void sendEvent(Reservation reservation) {
+        ReservationPaymentEvent event = ReservationPaymentEvent.builder()
+                .reservationId(reservation.getId())
+                .userId(reservation.getUser().getId())
+                .vehicleId(reservation.getVehicle().getId())
+                .startDate(reservation.getStartDate())
+                .endDate(reservation.getEndDate())
+                .price(reservation.getPrice())
+                .status(reservation.getStatus())
+                .dateCreated(reservation.getDateCreated())
+                .dateModified(reservation.getDateModified())
+                .build();
+
+        paymentEmitter.send(event)
+                .whenComplete((success, throwable) -> {
+                    if (throwable != null) {
+                        log.error("Failed to send payment event for reservation " + reservation.getId() + ": " + throwable.getMessage());
+                    } else {
+                        log.info("Payment event sent successfully for reservation " + reservation.getId());
+                    }
+                });
+    }
+
+    @Transactional
+    public Reservation setStatusCompleted(Long id) {
+        Reservation reservation = findReservationById(id);
+        if (reservation == null) {
+            throw new ResourceNotFoundException("Reservation not found");
+        }
+        reservation.setStatus(ReservationStatus.COMPLETED);
+        return updateReservationStatus(id, reservation);
     }
 }

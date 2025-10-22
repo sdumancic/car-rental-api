@@ -396,4 +396,184 @@
         </addColumn>
     </changeSet>
 
+    <!-- Vehicle Make/Model metadata table -->
+    <changeSet id="20251020-01-create-make-model-table" author="copilot">
+        <createTable tableName="make_model">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="date_created" type="datetime2">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_modified" type="datetime2">
+                <constraints nullable="false"/>
+            </column>
+            <column name="make" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="model" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex tableName="make_model" indexName="idx_make_model_make">
+            <column name="make"/>
+        </createIndex>
+        <createIndex tableName="make_model" indexName="idx_make_model_model">
+            <column name="model"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="20251020-02-insert-make-model-data" author="copilot">
+        <insert tableName="make_model">
+            <column name="make" value="Toyota"/>
+            <column name="model" value="Corolla"/>
+            <column name="date_created" valueDate="2025-10-20T00:00:00"/>
+            <column name="date_modified" valueDate="2025-10-20T00:00:00"/>
+        </insert>
+        <insert tableName="make_model">
+            <column name="make" value="Toyota"/>
+            <column name="model" value="Camry"/>
+            <column name="date_created" valueDate="2025-10-20T00:00:00"/>
+            <column name="date_modified" valueDate="2025-10-20T00:00:00"/>
+        </insert>
+        <insert tableName="make_model">
+            <column name="make" value="Toyota"/>
+            <column name="model" value="RAV4"/>
+            <column name="date_created" valueDate="2025-10-20T00:00:00"/>
+            <column name="date_modified" valueDate="2025-10-20T00:00:00"/>
+        </insert>
+        <insert tableName="make_model">
+            <column name="make" value="Toyota"/>
+            <column name="model" value="Prius"/>
+            <column name="date_created" valueDate="2025-10-20T00:00:00"/>
+            <column name="date_modified" valueDate="2025-10-20T00:00:00"/>
+        </insert>
+        <insert tableName="make_model">
+            <column name="make" value="Toyota"/>
+            <column name="model" value="Yaris"/>
+            <column name="date_created" valueDate="2025-10-20T00:00:00"/>
+            <column name="date_modified" valueDate="2025-10-20T00:00:00"/>
+        </insert>
+        <insert tableName="make_model">
+            <column name="make" value="Ford"/>
+            <column name="model" value="Focus"/>
+            <column name="date_created" valueDate="2025-10-20T00:00:00"/>
+            <column name="date_modified" valueDate="2025-10-20T00:00:00"/>
+        </insert>
+        <insert tableName="make_model">
+            <column name="make" value="Ford"/>
+            <column name="model" value="Fiesta"/>
+            <column name="date_created" valueDate="2025-10-20T00:00:00"/>
+            <column name="date_modified" valueDate="2025-10-20T00:00:00"/>
+        </insert>
+        <insert tableName="make_model">
+            <column name="make" value="Ford"/>
+            <column name="model" value="Mustang"/>
+            <column name="date_created" valueDate="2025-10-20T00:00:00"/>
+            <column name="date_modified" valueDate="2025-10-20T00:00:00"/>
+        </insert>
+        <insert tableName="make_model">
+            <column name="make" value="Ford"/>
+            <column name="model" value="Explorer"/>
+            <column name="date_created" valueDate="2025-10-20T00:00:00"/>
+            <column name="date_modified" valueDate="2025-10-20T00:00:00"/>
+        </insert>
+        <insert tableName="make_model">
+            <column name="make" value="Ford"/>
+            <column name="model" value="Fusion"/>
+            <column name="date_created" valueDate="2025-10-20T00:00:00"/>
+            <column name="date_modified" valueDate="2025-10-20T00:00:00"/>
+        </insert>
+        <insert tableName="make_model">
+            <column name="make" value="BMW"/>
+            <column name="model" value="3 Series"/>
+            <column name="date_created" valueDate="2025-10-20T00:00:00"/>
+            <column name="date_modified" valueDate="2025-10-20T00:00:00"/>
+        </insert>
+        <insert tableName="make_model">
+            <column name="make" value="BMW"/>
+            <column name="model" value="5 Series"/>
+            <column name="date_created" valueDate="2025-10-20T00:00:00"/>
+            <column name="date_modified" valueDate="2025-10-20T00:00:00"/>
+        </insert>
+        <insert tableName="make_model">
+            <column name="make" value="BMW"/>
+            <column name="model" value="X3"/>
+            <column name="date_created" valueDate="2025-10-20T00:00:00"/>
+            <column name="date_modified" valueDate="2025-10-20T00:00:00"/>
+        </insert>
+        <insert tableName="make_model">
+            <column name="make" value="BMW"/>
+            <column name="model" value="X5"/>
+            <column name="date_created" valueDate="2025-10-20T00:00:00"/>
+            <column name="date_modified" valueDate="2025-10-20T00:00:00"/>
+        </insert>
+        <insert tableName="make_model">
+            <column name="make" value="BMW"/>
+            <column name="model" value="1 Series"/>
+            <column name="date_created" valueDate="2025-10-20T00:00:00"/>
+            <column name="date_modified" valueDate="2025-10-20T00:00:00"/>
+        </insert>
+        <insert tableName="make_model">
+            <column name="make" value="Honda"/>
+            <column name="model" value="Civic"/>
+            <column name="date_created" valueDate="2025-10-20T00:00:00"/>
+            <column name="date_modified" valueDate="2025-10-20T00:00:00"/>
+        </insert>
+        <insert tableName="make_model">
+            <column name="make" value="Honda"/>
+            <column name="model" value="Accord"/>
+            <column name="date_created" valueDate="2025-10-20T00:00:00"/>
+            <column name="date_modified" valueDate="2025-10-20T00:00:00"/>
+        </insert>
+        <insert tableName="make_model">
+            <column name="make" value="Honda"/>
+            <column name="model" value="CR-V"/>
+            <column name="date_created" valueDate="2025-10-20T00:00:00"/>
+            <column name="date_modified" valueDate="2025-10-20T00:00:00"/>
+        </insert>
+        <insert tableName="make_model">
+            <column name="make" value="Honda"/>
+            <column name="model" value="Fit"/>
+            <column name="date_created" valueDate="2025-10-20T00:00:00"/>
+            <column name="date_modified" valueDate="2025-10-20T00:00:00"/>
+        </insert>
+        <insert tableName="make_model">
+            <column name="make" value="Honda"/>
+            <column name="model" value="Jazz"/>
+            <column name="date_created" valueDate="2025-10-20T00:00:00"/>
+            <column name="date_modified" valueDate="2025-10-20T00:00:00"/>
+        </insert>
+        <insert tableName="make_model">
+            <column name="make" value="Volkswagen"/>
+            <column name="model" value="Golf"/>
+            <column name="date_created" valueDate="2025-10-20T00:00:00"/>
+            <column name="date_modified" valueDate="2025-10-20T00:00:00"/>
+        </insert>
+        <insert tableName="make_model">
+            <column name="make" value="Volkswagen"/>
+            <column name="model" value="Passat"/>
+            <column name="date_created" valueDate="2025-10-20T00:00:00"/>
+            <column name="date_modified" valueDate="2025-10-20T00:00:00"/>
+        </insert>
+        <insert tableName="make_model">
+            <column name="make" value="Volkswagen"/>
+            <column name="model" value="Polo"/>
+            <column name="date_created" valueDate="2025-10-20T00:00:00"/>
+            <column name="date_modified" valueDate="2025-10-20T00:00:00"/>
+        </insert>
+        <insert tableName="make_model">
+            <column name="make" value="Volkswagen"/>
+            <column name="model" value="Tiguan"/>
+            <column name="date_created" valueDate="2025-10-20T00:00:00"/>
+            <column name="date_modified" valueDate="2025-10-20T00:00:00"/>
+        </insert>
+        <insert tableName="make_model">
+            <column name="make" value="Volkswagen"/>
+            <column name="model" value="Jetta"/>
+            <column name="date_created" valueDate="2025-10-20T00:00:00"/>
+            <column name="date_modified" valueDate="2025-10-20T00:00:00"/>
+        </insert>
+    </changeSet>
+
+
 </databaseChangeLog>

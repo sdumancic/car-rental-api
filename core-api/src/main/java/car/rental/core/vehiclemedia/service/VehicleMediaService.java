@@ -67,9 +67,24 @@ public class VehicleMediaService {
         if (vehicleMedia.getUrl() == null) {
             throw new IllegalArgumentException("Media not uploaded yet");
         }
-        // Extract blob name from URL robustly
+        // Determine marker based on media type
+        String marker;
+        switch (vehicleMedia.getType()) {
+            case COVER_IMAGE:
+            case FRONT_IMAGE:
+            case BACK_IMAGE:
+            case SIDE_IMAGE:
+            case INTERIOR_IMAGE:
+                marker = "/vehicles-images/";
+                break;
+            case EXTERIOR_VIDEO:
+            case INTERIOR_VIDEO:
+                marker = "/vehicles-videos/";
+                break;
+            default:
+                marker = "/vehicles/";
+        }
         String blobUrl = vehicleMedia.getUrl();
-        String marker = "/vehicles/";
         int idx = blobUrl.indexOf(marker);
         if (idx == -1) {
             throw new IllegalArgumentException("Invalid blob URL");

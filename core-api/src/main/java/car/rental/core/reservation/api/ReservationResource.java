@@ -52,6 +52,7 @@ public class ReservationResource {
             @QueryParam("endDate") String endDateStr,
             @QueryParam("status") String status,
             @QueryParam("sort") String sort,
+            @QueryParam("notCompleted") Integer notCompleted,
             @QueryParam("page") @DefaultValue("0") Integer page,
             @QueryParam("size") @DefaultValue("10") Integer size) {
 
@@ -65,6 +66,7 @@ public class ReservationResource {
                 .endDate(endDate)
                 .status(status != null ? ReservationStatus.valueOf(status.toUpperCase()) : null)
                 .sort(sort)
+                .notCompleted(notCompleted)
                 .page(page)
                 .size(size)
                 .build();
@@ -98,5 +100,22 @@ public class ReservationResource {
     public Response calculatePrice(@Valid CalculatePriceRequest request) {
         CalculatePriceResponse response = reservationService.calculateReservationPrice(request);
         return Response.ok(response).build();
+    }
+
+    @POST
+    @Path("/{id}/payment")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response payment(@PathParam("id") Long id, Reservation reservation) {
+        Reservation updated = reservationService.completeAndSendEvent(id, reservation);
+        return Response.ok(updated).build();
+    }
+
+    @POST
+    @Path("/{id}/complete")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response completeReservation(@PathParam("id") Long id) {
+        Reservation updated = reservationService.setStatusCompleted(id);
+        return Response.ok(updated).build();
     }
 }

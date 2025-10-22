@@ -1,6 +1,7 @@
 package car.rental.core.reservation.infrastructure.persistence;
 
 import car.rental.core.reservation.domain.model.Reservation;
+import car.rental.core.reservation.domain.model.ReservationStatus;
 import car.rental.core.reservation.domain.repository.ReservationRepository;
 import car.rental.core.reservation.dto.QueryReservationRequest;
 import car.rental.core.reservation.infrastructure.mapper.ReservationMapper;
@@ -76,9 +77,24 @@ public class PanacheReservationRepository implements ReservationRepository {
             params.and("status", query.getStatus());
         }
 
-        Sort sort = query.getSort() != null && !query.getSort().isEmpty()
-                ? Sort.ascending(query.getSort())
-                : Sort.descending("dateCreated");
+        if (query.getNotCompleted() != null && query.getNotCompleted() == 1) {
+            queryStr.append(" and status != :completedStatus");
+            params.and("completedStatus", car.rental.core.reservation.domain.model.ReservationStatus.COMPLETED);
+        }
+
+        String sortField = "dateCreated";
+        Sort sort;
+        if (query.getSort() != null && !query.getSort().isEmpty()) {
+            if (query.getSort().startsWith("-")) {
+                sortField = query.getSort().substring(1);
+                sort = Sort.descending(sortField);
+            } else {
+                sortField = query.getSort();
+                sort = Sort.ascending(sortField);
+            }
+        } else {
+            sort = Sort.descending(sortField);
+        }
 
         return reservationEntityRepository.find(queryStr.toString(), sort, params)
                 .page(query.getPage(), query.getSize())
@@ -138,10 +154,12 @@ public class PanacheReservationRepository implements ReservationRepository {
 
     @Override
     public boolean isVehicleAvailable(Long vehicleId, Instant startDate, Instant endDate, Long excludeReservationId) {
-        StringBuilder queryStr = new StringBuilder("active = :active and vehicle.id = :vehicleId and status != :cancelledStatus");
+        StringBuilder queryStr = new StringBuilder("active = :active and vehicle.id = :vehicleId and status != :cancelledStatus " +
+                "and status != :completedStatus");
         Parameters params = Parameters.with("active", true)
                 .and("vehicleId", vehicleId)
-                .and("cancelledStatus", car.rental.core.reservation.domain.model.ReservationStatus.CANCELLED);
+                .and("cancelledStatus", car.rental.core.reservation.domain.model.ReservationStatus.CANCELLED)
+                .and("completedStatus", ReservationStatus.COMPLETED);
 
         // Overlap conditions
         queryStr.append(" and ((startDate <= :startDate and endDate >= :startDate) or (startDate <= :endDate and endDate >= :endDate) or (startDate >= :startDate and endDate <= :endDate))");
