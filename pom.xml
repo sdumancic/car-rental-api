@@ -33,6 +33,7 @@
 
     <modules>
         <module>core-api</module>
+        <module>accounting-api</module>
     </modules>
 
     <dependencyManagement>

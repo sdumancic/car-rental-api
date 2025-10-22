@@ -248,9 +248,9 @@ public class ReservationService {
         paymentEmitter.send(event)
                 .whenComplete((success, throwable) -> {
                     if (throwable != null) {
-                        log.error("Failed to send payment event for reservation " + reservation.getId() + ": " + throwable.getMessage());
+                        log.error("Failed to send payment event for reservation {}: {}", reservation.getId(), throwable.getMessage());
                     } else {
-                        log.info("Payment event sent successfully for reservation " + reservation.getId());
+                        log.info("Payment event sent successfully for reservation {}", reservation.getId());
                     }
                 });
     }
