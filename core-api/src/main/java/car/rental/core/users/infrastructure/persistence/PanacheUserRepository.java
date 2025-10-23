@@ -30,6 +30,12 @@ public class PanacheUserRepository implements UserRepository {
     }
 
     @Override
+    public Optional<User> findByUsername(String username) {
+        return entityRepo.find("username", username).firstResultOptional()
+                .map(UserMapper::toDomain);
+    }
+
+    @Override
     public List<User> findAll() {
         return entityRepo.listAll().stream().map(UserMapper::toDomain).toList();
     }

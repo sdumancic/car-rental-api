@@ -75,7 +75,7 @@ public class KeycloakUserService {
 
     public String createUserInKeycloak(CreateUserRequest request) {
         try {
-            RealmResource realmResource = keycloak.realm("myrealm");
+            RealmResource realmResource = keycloak.realm("quarkus");
             UsersResource usersResource = realmResource.users();
 
             UserRepresentation user = new UserRepresentation();

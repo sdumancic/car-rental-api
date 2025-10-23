@@ -33,6 +33,32 @@ public class UserResource {
                 .build();
     }
 
+    @GET
+    @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getUserById(@PathParam("id") Long id) {
+        User user = userService.findUserById(id);
+        if (user == null) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity("User not found")
+                    .build();
+        }
+        return Response.ok(user).build();
+    }
+
+    @GET
+    @Path("/username/{username}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response findUserByUsername(@PathParam("username") String username) {
+        User user = userService.findUserByUsername(username);
+        if (user == null) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity("User not found with username: " + username)
+                    .build();
+        }
+        return Response.ok(user).build();
+    }
+
     @PUT
     @Path("/{id}")
     @Consumes(MediaType.APPLICATION_JSON)

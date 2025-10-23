@@ -43,6 +43,10 @@ public class UserService {
         return userRepository.findById(id).orElse(null);
     }
 
+    public User findUserByUsername(String username) {
+        return userRepository.findByUsername(username).orElse(null);
+    }
+
     @Transactional
     public User updateUser(Long id, CreateUserRequest request) {
         User user = UserMapper.toDomain(request);
