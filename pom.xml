@@ -29,6 +29,7 @@
         <!-- Toolchains plugin version -->
         <toolchains-plugin.version>3.1.0</toolchains-plugin.version>
         <azure.storage.version>12.28.0</azure.storage.version>
+        <quarkus-langchain4j.version>1.3.0</quarkus-langchain4j.version>
     </properties>
 
     <modules>
@@ -36,6 +37,7 @@
         <module>accounting-api</module>
         <module>geocollector-api</module>
         <module>geoprocessor-api</module>
+        <module>langchain-api</module>
     </modules>
 
     <dependencyManagement>
@@ -68,7 +70,15 @@
                 <artifactId>quarkus-oidc</artifactId>
                 <version>${quarkus.platform.version}</version>
             </dependency>
+            <dependency>
+                <groupId>io.quarkiverse.langchain4j</groupId>
+                <artifactId>quarkus-langchain4j-bom</artifactId>
+                <version>${quarkus-langchain4j.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
         </dependencies>
+
     </dependencyManagement>
 
     <build>

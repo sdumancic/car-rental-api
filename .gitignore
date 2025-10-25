@@ -45,3 +45,7 @@ nb-configuration.xml
 .certs/
 
 core-api/src/main/resources/application-dev.properties
+accounting-api/src/main/resources/application-dev.properties
+geocollector-api/src/main/resources/application-dev.properties
+geoprocessor-api/src/main/resources/application-dev.properties
+langchain-api/src/main/resources/application-dev.properties

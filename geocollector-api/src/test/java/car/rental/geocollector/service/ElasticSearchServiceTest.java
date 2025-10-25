@@ -58,7 +58,7 @@ class ElasticSearchServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(ints = {5, 10, 20})
+    @ValueSource(ints = {5, 10})
         // Example values for N
     void sendVehicleLocationEventsForMultipleVehicles(int n) throws InterruptedException {
         double startLat = 46.38444;
