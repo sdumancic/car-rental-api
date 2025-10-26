@@ -12,7 +12,6 @@ import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -45,7 +44,7 @@ public class VehicleMediaResource {
     @Path("{id}/upload")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response addMediaToVehicle(@MultipartForm FileUploadForm form, @PathParam("id") Long id) {
+    public Response addMediaToVehicle(FileUploadForm form, @PathParam("id") Long id) {
         VehicleMedia vehicleMedia = vehicleMediaService.findById(id);
         UploadResult result = azureBlobService.uploadMediaForVehicle(form.fileInput, form.fileName, vehicleMedia.getVehicle().getId());
         vehicleMediaService.setMediaBlobUrl(vehicleMedia, result.getUrl());

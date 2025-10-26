@@ -65,8 +65,6 @@ services:
     ports:
       - "16686:16686" # Jaeger UI
       - "14268:14268" # Receive legacy OpenTracing traces, optional
-      - "4317:4317"   # OTLP gRPC receiver
-      - "4318:4318"   # OTLP HTTP receiver
       - "14250:14250" # Receive from external otel-collector, optional
     environment:
       - COLLECTOR_OTLP_ENABLED=true
@@ -168,6 +166,25 @@ services:
       - postgres
     networks:
       - car-rental-network
+
+  otel-lgtm:
+    image: docker.io/grafana/otel-lgtm:0.11.0
+    container_name: otel-lgtm
+    restart: unless-stopped
+    ports:
+      - "3000:3000"    # Grafana UI
+      - "4317:4317"    # OTLP gRPC
+      - "4318:4318"    # OTLP HTTP
+      - "3100:3100"    # Loki
+      - "9095:9095"    # Tempo
+      - "9009:9009"    # Mimir
+      - "8080:8080"    # LGTM API
+    networks:
+      - car-rental-network
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_USER=admin
+
 
 volumes:
   keycloak_data:

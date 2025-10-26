@@ -12,7 +12,7 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
-import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
+
 
 @RequestScoped
 @Path("/v1/users")
@@ -79,7 +79,7 @@ public class UserResource {
     @Path("/{id}/driver-license")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response uploadDriverLicense(@PathParam("id") Long id, @MultipartForm DriverLicenseUploadForm form) {
+    public Response uploadDriverLicense(@PathParam("id") Long id, DriverLicenseUploadForm form) {
         try {
             UploadResult result = userService.uploadDriverLicense(id, form.getFile(), form.getFileName());
             return Response.ok(result).build();
