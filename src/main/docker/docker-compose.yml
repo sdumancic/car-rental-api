@@ -185,6 +185,19 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_SECURITY_ADMIN_USER=admin
 
+  damage-detection:
+    image: sanjind/car-damage-service:1.0.0
+    container_name: damage-detection
+    ports:
+      - "8000:8000"
+    networks:
+      - car-rental-network
+    # Add any environment variables or volumes needed for the damage detection service
+    # environment:
+    #   - MODEL_PATH=/models
+    # volumes:
+    #   - ./models:/models
+
 
 volumes:
   keycloak_data:

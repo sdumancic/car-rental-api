@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="20251030-01-create-insurance-claims" author="autogen">
+        <createTable tableName="insurance_claims">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="vehicle_id" type="BIGINT"/>
+            <column name="damage_level" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="confidence" type="FLOAT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="damage_description" type="VARCHAR(2000)"/>
+            <column name="image_url" type="VARCHAR(500)"/>
+            <column name="status" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="claim_date" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="estimated_cost" type="FLOAT"/>
+            <column name="date_created" type="DATETIME" defaultValueComputed="GETDATE()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_modified" type="DATETIME" defaultValueComputed="GETDATE()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="insurance_claims" indexName="idx_insurance_claims_user_id">
+            <column name="user_id"/>
+        </createIndex>
+
+        <createIndex tableName="insurance_claims" indexName="idx_insurance_claims_vehicle_id">
+            <column name="vehicle_id"/>
+        </createIndex>
+
+        <createIndex tableName="insurance_claims" indexName="idx_insurance_claims_status">
+            <column name="status"/>
+        </createIndex>
+
+        <createIndex tableName="insurance_claims" indexName="idx_insurance_claims_claim_date">
+            <column name="claim_date"/>
+        </createIndex>
+    </changeSet>
+
+
+</databaseChangeLog>
